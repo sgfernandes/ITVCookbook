@@ -3,83 +3,224 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Baseline data and savings uncertainty</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<title>Baseline Data & Savings Uncertainty | ITV M&V</title>
 <style>
-:root{--bg:#f6f8f7;--card:#fff;--ink:#14231f;--mute:#5d6e68;--line:#d8e0dd;--acc:#0b7d6e;--warn:#c2410c;--ok:#0b7d6e;
-box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1816;--card:#16231f;--ink:#e6efec;--mute:#93a69f;--line:#2a3b36;--acc:#3fc4b0;--warn:#f59e6b;--ok:#3fc4b0}}
-:root[data-theme="dark"]{--bg:#0f1816;--card:#16231f;--ink:#e6efec;--mute:#93a69f;--line:#2a3b36;--acc:#3fc4b0;--warn:#f59e6b;--ok:#3fc4b0}
-*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
-body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 "IBM Plex Sans",system-ui,sans-serif}
-main{max-width:720px;margin:0 auto;padding:20px 16px 40px}
-h1{font-size:22px;line-height:1.2;margin:0 0 6px;font-weight:600}
-p.sub{margin:0 0 16px;color:var(--mute);max-width:60ch}
-section{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px}
-h2{font-size:15px;margin:0 0 8px;font-weight:600}
-.row{display:grid;grid-template-columns:1fr auto;gap:2px 8px;margin-bottom:10px;align-items:center}
-.row label{font-size:13px;color:var(--mute)}.row output{font-weight:600;font-variant-numeric:tabular-nums}
-.row input[type=range]{grid-column:1/-1;width:100%;accent-color:var(--acc)}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-select,button{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%}
-button.main{background:var(--acc);color:var(--bg);border-color:var(--acc);font-weight:600}
-button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.stat b{display:block;font-size:22px;font-weight:600;font-variant-numeric:tabular-nums}.stat span{font-size:12px;color:var(--mute)}
-#verdict{padding:10px 12px;border-radius:8px;border:1px solid var(--line);margin-top:12px;font-weight:500}
-#verdict.ok{border-color:var(--ok)}#verdict.no{border-color:var(--warn)}
-#flags{margin:8px 0 0;padding-left:18px;color:var(--warn);font-size:13px}
-svg{width:100%;height:auto;display:block}
-.note{font-size:12.5px;color:var(--mute);margin:6px 0 0}
+:root {
+    --primary: #005a9c;
+    --primary-light: #e6f0f8;
+    --bg: #f4f6f9;
+    --card: #fff;
+    --ink: #222;
+    --mute: #555;
+    --line: #dce1e7;
+    --acc: #0b7d6e;
+    --warn: #c2410c;
+    --ok: #16a34a;
+}
+* { box-sizing: border-box; }
+body {
+    margin: 0;
+    padding: 20px;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+}
+.container {
+    max-width: 950px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+}
+.nav-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 15px;
+}
+.nav-link {
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--primary);
+    background: var(--primary-light);
+    transition: all 0.2s;
+}
+.nav-link:hover {
+    background: #cfe2f3;
+}
+.nav-link.active {
+    background: var(--primary);
+    color: #fff;
+}
+header {
+    border-bottom: 2px solid var(--primary);
+    padding-bottom: 20px;
+    margin-bottom: 25px;
+}
+h1 {
+    font-size: 1.8rem;
+    line-height: 1.2;
+    margin: 0;
+    color: var(--primary);
+}
+p.sub {
+    margin: 6px 0 0;
+    color: #666;
+    font-size: 0.95rem;
+}
+.sim-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+@media (max-width: 760px) {
+    .sim-grid { grid-template-columns: 1fr; }
+}
+section {
+    background: #f8fafc;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+h2 {
+    font-size: 1.05rem;
+    margin: 0 0 10px;
+    font-weight: 600;
+    color: var(--primary);
+}
+.row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 2px 8px;
+    margin-bottom: 10px;
+    align-items: center;
+}
+.row label { font-size: 0.9rem; color: var(--mute); }
+.row output { font-weight: 600; font-variant-numeric: tabular-nums; }
+.row input[type=range] { grid-column: 1 / -1; width: 100%; accent-color: var(--primary); cursor: pointer; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+select, button {
+    font: inherit;
+    color: var(--ink);
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 8px 12px;
+    width: 100%;
+    cursor: pointer;
+}
+button.main {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+    font-weight: 600;
+}
+button.main:hover { background: #004477; }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+@media (max-width: 650px) { .stats { grid-template-columns: 1fr 1fr; } }
+.stat {
+    background: #fff;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+}
+.stat b { display: block; font-size: 1.4rem; font-weight: 700; color: var(--primary); font-variant-numeric: tabular-nums; }
+.stat span { font-size: 0.8rem; color: var(--mute); }
+#verdict {
+    padding: 10px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: #fff;
+    margin-top: 12px;
+    font-weight: 600;
+}
+#verdict.ok { border-color: var(--ok); background: #f0fdf4; color: #166534; }
+#verdict.no { border-color: var(--warn); background: #fff7ed; color: #9a3412; }
+#flags { margin: 8px 0 0; padding-left: 18px; color: var(--warn); font-size: 0.88rem; }
+svg { width: 100%; height: auto; display: block; background: #fff; border-radius: 6px; border: 1px solid var(--line); padding: 6px; }
+.note { font-size: 0.82rem; color: var(--mute); margin: 8px 0 0; }
 </style>
 </head>
 <body>
-<main>
-<h1>How much baseline data is enough?</h1>
-<p class="sub">Add months of simulated pre-retrofit data and watch the model fit, temperature coverage and savings uncertainty change.</p>
 
-<section>
-<div class="row"><label for="k">Baseline months</label><output id="ko"></output><input id="k" type="range" min="3" max="36" value="3"></div>
-<div class="two"><button class="main" id="play">Play: add a month at a time</button><button id="re">New random data</button></div>
-</section>
+<div class="container">
+    <nav class="nav-bar">
+        <a href="index.html" class="nav-link">📋 Full Lifecycle Checklist</a>
+        <a href="quick-gate.html" class="nav-link">⚡ 1-Page Stage-Gate Cheat Sheet</a>
+        <a href="baseline-uncertainty.html" class="nav-link active">📈 Baseline & Uncertainty Simulator</a>
+    </nav>
 
-<section>
-<h2>Assumptions</h2>
-<div class="row"><label for="f">Expected savings (% of baseline use)</label><output id="fo"></output><input id="f" type="range" min="2" max="40" value="10"></div>
-<div class="row"><label for="n">Noise in the data, CV(RMSE) (%)</label><output id="no"></output><input id="n" type="range" min="1" max="30" value="6"></div>
-<div class="row"><label for="m">Reporting period (months)</label><output id="mo"></output><input id="m" type="range" min="1" max="36" value="12"></div>
-<div class="row"><label for="t">Target uncertainty (± % of savings)</label><output id="to"></output><input id="t" type="range" min="10" max="100" step="5" value="50"></div>
-<div class="two">
-<label class="note">Confidence level<select id="c"><option value="0.994">68%</option><option value="1.282">80%</option><option value="1.645" selected>90%</option></select></label>
-<label class="note">Baseline starts in<select id="s"></select></label>
+    <header>
+        <h1>How much baseline data is enough?</h1>
+        <p class="sub">Add months of simulated pre-retrofit data and watch the model fit, temperature coverage, and ASHRAE Guideline 14 savings uncertainty change.</p>
+    </header>
+
+    <section>
+        <div class="row">
+            <label for="k">Baseline months</label>
+            <output id="ko"></output>
+            <input id="k" type="range" min="3" max="36" value="3">
+        </div>
+        <div class="two">
+            <button class="main" id="play">Play: add a month at a time</button>
+            <button id="re">New random data</button>
+        </div>
+    </section>
+
+    <section>
+        <h2>Assumptions</h2>
+        <div class="sim-grid">
+            <div>
+                <div class="row"><label for="f">Expected savings (% of baseline use)</label><output id="fo"></output><input id="f" type="range" min="2" max="40" value="10"></div>
+                <div class="row"><label for="n">Noise in the data, CV(RMSE) (%)</label><output id="no"></output><input id="n" type="range" min="1" max="30" value="6"></div>
+            </div>
+            <div>
+                <div class="row"><label for="m">Reporting period (months)</label><output id="mo"></output><input id="m" type="range" min="1" max="36" value="12"></div>
+                <div class="row"><label for="t">Target uncertainty (± % of savings)</label><output id="to"></output><input id="t" type="range" min="10" max="100" step="5" value="50"></div>
+            </div>
+        </div>
+        <div class="two" style="margin-top:6px;">
+            <label class="note">Confidence level<select id="c"><option value="0.994">68%</option><option value="1.282">80%</option><option value="1.645" selected>90%</option></select></label>
+            <label class="note">Baseline starts in<select id="s"></select></label>
+        </div>
+    </section>
+
+    <section>
+        <div class="stats">
+            <div class="stat"><b id="s1"></b><span>Baseline months used</span></div>
+            <div class="stat"><b id="s2"></b><span>Model CV(RMSE) (limit 20–25%)</span></div>
+            <div class="stat"><b id="s3"></b><span>Savings uncertainty</span></div>
+            <div class="stat"><b id="s4"></b><span>Months needed to hit target</span></div>
+        </div>
+        <div id="verdict"></div>
+        <ul id="flags"></ul>
+    </section>
+
+    <div class="sim-grid">
+        <section style="margin-bottom:0;">
+            <h2>Simulated baseline and fitted model</h2>
+            <div id="c1"></div>
+            <p class="note">Dots are monthly energy vs. average temperature. Filled dots are in your baseline; hollow dots are not yet added. Shaded band is temperature coverage.</p>
+        </section>
+
+        <section style="margin-bottom:0;">
+            <h2>Uncertainty as baseline grows</h2>
+            <div id="c2"></div>
+            <p class="note">Curve: expected uncertainty at assumed noise. Dot: what this simulated sample gives. Dashed lines: target uncertainty and 12-month mark.</p>
+        </section>
+    </div>
+
+    <p class="note" style="margin-top:16px;">Method: ASHRAE Guideline 14 fractional savings uncertainty, 1.26 × t × (CV(RMSE) ÷ F) × √((1 + 2/n) ÷ m), with a three-parameter (base, heating, cooling) monthly model at a 60°F balance point. Assumes independent monthly residuals; interval data requires the autocorrelation adjustment.</p>
 </div>
-</section>
 
-<section>
-<div class="stats">
-<div class="stat"><b id="s1"></b><span>Baseline months used</span></div>
-<div class="stat"><b id="s2"></b><span>Model CV(RMSE) from this data (limit 25%)</span></div>
-<div class="stat"><b id="s3"></b><span>Savings uncertainty</span></div>
-<div class="stat"><b id="s4"></b><span>Months needed to hit target</span></div>
-</div>
-<div id="verdict"></div>
-<ul id="flags"></ul>
-</section>
-
-<section>
-<h2>Simulated baseline and fitted model</h2>
-<div id="c1"></div>
-<p class="note">Dots are monthly energy against average temperature. Filled dots are in your baseline, hollow dots are not yet added. The shaded band is the temperature range the baseline covers.</p>
-</section>
-
-<section>
-<h2>Uncertainty as baseline grows</h2>
-<div id="c2"></div>
-<p class="note">Line: expected uncertainty at your assumed noise. Dot: what this particular simulated sample gives. Dashed lines: your target and 12 months.</p>
-</section>
-
-<p class="note">Method: ASHRAE Guideline 14 fractional savings uncertainty, 1.26 × t × (CV(RMSE) ÷ F) × √((1 + 2/n) ÷ m), with a three-parameter (base, heating, cooling) monthly model at a 60°F balance point. It assumes independent monthly residuals. Interval data needs the autocorrelation adjustment.</p>
-</main>
 <script>
 const $=id=>document.getElementById(id);
 const MON=["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -99,19 +240,21 @@ const v=keep.map(a=>X.reduce((s,r,i)=>s+r[a]*pts[i].y,0)),sol=solve(A,v),beta=[0
 const pred=T=>cols(T).reduce((s,c,j)=>s+c*beta[j],0),sse=pts.reduce((s,p)=>s+(p.y-pred(p.T))**2,0),mean=pts.reduce((s,p)=>s+p.y,0)/pts.length,df=pts.length-keep.length;
 return{beta,pred,keep,df,cv:df>0?Math.sqrt(sse/df)/mean:null}}
 function tq(z,df){if(df<1)return NaN;return z+(z**3+z)/(4*df)+(5*z**5+16*z**3+3*z)/(96*df*df)}
-const unc=(cv,F,n,m,z)=>1.26*tq(z,n-3)*(cv/F)*Math.sqrt((1+2/n)/m);
+// Pass actual df when available so 2-parameter sub-annual fits at k=3 do not divide by zero (k-3=0)
+const unc=(cv,F,n,m,z,dfOverride)=>{const df=dfOverride!==undefined?dfOverride:(n-3);return 1.26*tq(z,df)*(cv/F)*Math.sqrt((1+2/n)/m)};
 const pc=x=>(x*100).toFixed(0)+"%";
 function line(pts,cls){return `<polyline fill="none" ${cls} points="${pts.map(p=>p.join(",")).join(" ")}"/>`}
 function update(){
 const k=+$("k").value,F=$("f").value/100,cvN=$("n").value/100,m=+$("m").value,tg=$("t").value/100,z=+$("c").value,st=+$("s").value;
 $("ko").textContent=k+" months";$("fo").textContent=$("f").value+"%";$("no").textContent=$("n").value+"%";$("mo").textContent=m+" months";$("to").textContent="±"+$("t").value+"%";
 const all=sim(st,cvN),pts=all.slice(0,k),f=fit(pts),conf=Math.round(z>1.5?90:z>1.2?80:68);
-const real=f.df>0?unc(f.cv,F,k,m,z):null;
+const rawReal=f.df>0?unc(f.cv,F,k,m,z,f.df):null;
+const real=(rawReal!==null&&Number.isFinite(rawReal))?rawReal:null;
 let need=null;for(let n=4;n<=120;n++){if(unc(cvN,F,n,m,z)<=tg){need=n;break}}
 $("s1").textContent=k;$("s2").textContent=f.cv==null?"n/a":pc(f.cv);$("s3").textContent=real==null?"n/a":"±"+pc(real);
 $("s4").textContent=need==null?"10+ years":need<12?need+" (12 in practice)":need;
 const v=$("verdict");
-if(real==null){v.className="";v.textContent="Add at least "+(f.keep.length+1)+" months before the model can estimate its own error."}
+if(real==null){v.className="";v.textContent="Add at least "+(f.keep.length+1)+" months before the model has enough degrees of freedom to estimate error."}
 else if(real<=tg){v.className="ok";v.textContent="Meets target: savings known to ±"+pc(real)+" at "+conf+"% confidence."}
 else{v.className="no";v.textContent="Not yet: ±"+pc(real)+" against a ±"+pc(tg)+" target at "+conf+"% confidence."}
 const yr=all.slice(0,12).map(p=>p.T),lo=Math.min(...yr),hi=Math.max(...yr),Tk=pts.map(p=>p.T),klo=Math.min(...Tk),khi=Math.max(...Tk),cov=Math.min(1,(khi-klo)/(hi-lo));
