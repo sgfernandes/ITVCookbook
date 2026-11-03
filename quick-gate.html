@@ -6,32 +6,33 @@
     <title>1-Page Stage-Gate Cheat Sheet | ITV M&V</title>
     <style>
         :root {
-            --primary: #0f4c81;
-            --primary-light: #e8f1f8;
-            --accent: #d97706;
-            --success: #16a34a;
+            --primary: #005a9c;
+            --primary-light: #e6f0f8;
+            --success: #28a745;
             --bg: #f4f6f9;
-            --text: #222;
+            --text: #333;
             --border: #dce1e7;
         }
+        * { box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            line-height: 1.5;
+            line-height: 1.6;
             color: var(--text);
             background-color: var(--bg);
             margin: 0;
             padding: 20px;
         }
         .container {
-            max-width: 900px;
+            max-width: 950px;
             margin: 0 auto;
             background: #fff;
-            padding: 25px 35px;
+            padding: 30px;
             border-radius: 8px;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.06);
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
         }
         .nav-bar {
             display: flex;
+            flex-wrap: wrap;
             gap: 10px;
             margin-bottom: 20px;
             border-bottom: 1px solid var(--border);
@@ -55,22 +56,25 @@
             color: #fff;
         }
         header {
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 20px;
+            margin-bottom: 25px;
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
             flex-wrap: wrap;
             gap: 15px;
-            margin-bottom: 20px;
         }
         h1 {
             margin: 0;
             color: var(--primary);
-            font-size: 1.7rem;
+            font-size: 1.8rem;
+            line-height: 1.2;
         }
         .subtitle {
-            color: #555;
+            color: #666;
             font-size: 0.95rem;
-            margin-top: 4px;
+            margin-top: 6px;
         }
         .controls {
             display: flex;
@@ -83,29 +87,30 @@
             padding: 8px 14px;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             font-weight: 500;
+            transition: background 0.2s;
         }
-        button:hover { opacity: 0.9; }
-        button.danger { background: #dc2626; }
+        button:hover { background: #004477; }
+        button.danger { background: #dc3545; }
+        button.danger:hover { background: #b02a37; }
         .overall-progress {
-            margin-bottom: 25px;
+            margin-bottom: 30px;
             background: var(--primary-light);
-            padding: 12px 18px;
+            padding: 15px 20px;
             border-radius: 6px;
         }
         .progress-header {
             display: flex;
             justify-content: space-between;
             font-weight: bold;
-            font-size: 0.95rem;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             color: var(--primary);
         }
         .progress-bar-bg {
             background: #cbd5e1;
-            height: 12px;
-            border-radius: 6px;
+            height: 14px;
+            border-radius: 7px;
             overflow: hidden;
         }
         .progress-bar-fill {
@@ -118,49 +123,50 @@
             border: 1px solid var(--border);
             border-left: 5px solid var(--primary);
             border-radius: 6px;
-            margin-bottom: 18px;
+            margin-bottom: 20px;
             background: #fff;
+            overflow: hidden;
         }
         .gate-card.complete {
             border-left-color: var(--success);
         }
         .gate-header {
             background: #f8fafc;
-            padding: 12px 18px;
+            padding: 15px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid var(--border);
         }
         .gate-title {
-            font-size: 1.1rem;
-            font-weight: 700;
+            font-size: 1.15rem;
+            font-weight: 600;
             color: var(--primary);
             margin: 0;
         }
         .gate-badge {
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             background: var(--primary-light);
             color: var(--primary);
-            padding: 3px 10px;
+            padding: 4px 10px;
             border-radius: 12px;
-            font-weight: 700;
+            font-weight: 600;
         }
         .gate-body {
-            padding: 12px 18px;
+            padding: 15px 20px;
         }
         .checklist-item {
             display: flex;
             align-items: flex-start;
-            gap: 10px;
-            padding: 7px 4px;
+            gap: 12px;
+            padding: 8px 6px;
             border-bottom: 1px dashed #eee;
         }
         .checklist-item:last-child {
             border-bottom: none;
         }
         .checklist-item input[type="checkbox"] {
-            margin-top: 4px;
+            margin-top: 5px;
             transform: scale(1.2);
             cursor: pointer;
         }
@@ -195,7 +201,7 @@
     <nav class="nav-bar">
         <a href="index.html" class="nav-link">📋 Full Lifecycle Checklist</a>
         <a href="quick-gate.html" class="nav-link active">⚡ 1-Page Stage-Gate Cheat Sheet</a>
-        <a href="baseline-uncertainty.html" style="text-decoration:none; padding:6px 14px; border-radius:20px; font-size:13px; font-weight:600; background:var(--acc); color:var(--bg);">📈 Baseline &amp; Uncertainty Simulator</a>
+        <a href="baseline-uncertainty.html" class="nav-link">📈 Baseline & Uncertainty Simulator</a>
     </nav>
 
     <header>
@@ -205,7 +211,7 @@
         </div>
         <div class="controls">
             <button onclick="window.print()">Print / PDF</button>
-            <button class="danger" onclick="resetGates()">Reset</button>
+            <button class="danger" onclick="resetGates()">Reset All</button>
         </div>
     </header>
 
@@ -366,8 +372,8 @@ function updateProgress() {
         badge.textContent = `${checked} / ${total}`;
 
         if (checked === total && total > 0) {
-            badge.style.background = '#dcfce7';
-            badge.style.color = '#15803d';
+            badge.style.background = '#d4edda';
+            badge.style.color = '#155724';
             card.classList.add('complete');
         } else {
             badge.style.background = 'var(--primary-light)';
