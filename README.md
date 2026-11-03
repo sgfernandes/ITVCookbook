@@ -34,3 +34,7 @@ python3 -I tools/build_knowledge.py /path/to/SecondBrain --no-submissions
 ```
 
 `--no-submissions` leaves out the application submission text. If you include it, contact details are redacted, but check that the content is OK to publish before committing it.
+
+## Slides
+
+[`slides/agentic-program-management.pptx`](slides/agentic-program-management.pptx) is a 2-slide deck, with speaker notes, explaining the dashboard as **Agentic Program Management**. The same content and notes are in [`slides/agentic-program-management.md`](slides/agentic-program-management.md). Rebuild the deck with `python3 tools/build_slides.py` (needs python-pptx).
