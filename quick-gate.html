@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1-Page Stage-Gate Cheat Sheet | ITV M&V</title>
+    <style>
+        :root {
+            --primary: #0f4c81;
+            --primary-light: #e8f1f8;
+            --accent: #d97706;
+            --success: #16a34a;
+            --bg: #f4f6f9;
+            --text: #222;
+            --border: #dce1e7;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.5;
+            color: var(--text);
+            background-color: var(--bg);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 25px 35px;
+            border-radius: 8px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.06);
+        }
+        .nav-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 15px;
+        }
+        .nav-link {
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--primary);
+            background: var(--primary-light);
+            transition: all 0.2s;
+        }
+        .nav-link:hover {
+            background: #cfe2f3;
+        }
+        .nav-link.active {
+            background: var(--primary);
+            color: #fff;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            margin: 0;
+            color: var(--primary);
+            font-size: 1.7rem;
+        }
+        .subtitle {
+            color: #555;
+            font-size: 0.95rem;
+            margin-top: 4px;
+        }
+        .controls {
+            display: flex;
+            gap: 8px;
+        }
+        button {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        button:hover { opacity: 0.9; }
+        button.danger { background: #dc2626; }
+        .overall-progress {
+            margin-bottom: 25px;
+            background: var(--primary-light);
+            padding: 12px 18px;
+            border-radius: 6px;
+        }
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            font-size: 0.95rem;
+            margin-bottom: 6px;
+            color: var(--primary);
+        }
+        .progress-bar-bg {
+            background: #cbd5e1;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            background: var(--success);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .gate-card {
+            border: 1px solid var(--border);
+            border-left: 5px solid var(--primary);
+            border-radius: 6px;
+            margin-bottom: 18px;
+            background: #fff;
+        }
+        .gate-card.complete {
+            border-left-color: var(--success);
+        }
+        .gate-header {
+            background: #f8fafc;
+            padding: 12px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+        .gate-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 0;
+        }
+        .gate-badge {
+            font-size: 0.8rem;
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-weight: 700;
+        }
+        .gate-body {
+            padding: 12px 18px;
+        }
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 7px 4px;
+            border-bottom: 1px dashed #eee;
+        }
+        .checklist-item:last-child {
+            border-bottom: none;
+        }
+        .checklist-item input[type="checkbox"] {
+            margin-top: 4px;
+            transform: scale(1.2);
+            cursor: pointer;
+        }
+        .checklist-item label {
+            cursor: pointer;
+            flex: 1;
+            font-size: 0.95rem;
+        }
+        .checklist-item.checked label {
+            text-decoration: line-through;
+            color: #888;
+        }
+        .pill {
+            display: inline-block;
+            background: #fef3c7;
+            color: #92400e;
+            font-weight: 600;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+        @media print {
+            body { background: #fff; padding: 0; }
+            .container { box-shadow: none; max-width: 100%; padding: 0; }
+            .controls, .nav-bar { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <nav class="nav-bar">
+        <a href="index.html" class="nav-link">📋 Full Lifecycle Checklist</a>
+        <a href="quick-gate.html" class="nav-link active">⚡ 1-Page Stage-Gate Cheat Sheet</a>
+    </nav>
+
+    <header>
+        <div>
+            <h1>1-Page Stage-Gate Cheat Sheet</h1>
+            <div class="subtitle">Fast Go / No-Go Statistical & Operational Rigor Checks for ITV Projects</div>
+        </div>
+        <div class="controls">
+            <button onclick="window.print()">Print / PDF</button>
+            <button class="danger" onclick="resetGates()">Reset</button>
+        </div>
+    </header>
+
+    <div class="overall-progress">
+        <div class="progress-header">
+            <span>Stage-Gate Readiness</span>
+            <span id="overall-text">0 / 0 (0%)</span>
+        </div>
+        <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="overall-bar"></div>
+        </div>
+    </div>
+
+    <div id="gates-root"></div>
+</div>
+
+<script>
+const gateData = [
+    {
+        id: "gate-1",
+        title: "Gate 1: Project Setup & Strategy (Before Buying/Installing Meters)",
+        items: [
+            "<b>Draw the Box:</b> Is the measurement boundary drawn around the specific sub-system (<span class='pill'>IPMVP Option B</span>) rather than the whole facility?",
+            "<b>Classify the Load:</b> Is the system Variable Load / Variable Schedule (VLVS)? <i>(If yes, continuous metering is mandatory; spot checks are not allowed).</i>",
+            "<b>Rule of 15-Minutes:</b> Are meters set to log at a finer interval than your planned model? <i>(Rule of thumb: Log at <span class='pill'>15-min intervals</span> to build an hourly or daily model).</i>",
+            "<b>Lock the Weights:</b> Have stakeholders signed off on the KPI weights (<span class='pill'>&Sigma;w<sub>i</sub> = 1.0</span>) <i>before</i> data collection starts so nobody can move the goalposts later?"
+        ]
+    },
+    {
+        id: "gate-2",
+        title: "Gate 2: Data Hygiene & Sufficiency (Before Modeling)",
+        items: [
+            "<b>Cross-Check Vendor Data:</b> Have you verified the technology developer's sensor readings using an independent clamp meter, secondary logger, or physics check (e.g., pump/fan affinity laws)?",
+            "<b>Screen Outliers Carefully:</b> Flag points outside <span class='pill'>&plusmn;3 standard deviations</span> or null values, <i>but confirm with site staff</i> whether they are true sensor errors/NREs before deleting.",
+            "<b>The 90/110 Coverage Rule:</b> Do your post-implementation independent variables (weather, production) fall within <span class='pill'>90% of the min to 110% of the max</span> of your baseline dataset?"
+        ]
+    },
+    {
+        id: "gate-3",
+        title: "Gate 3: Commissioning 'Go / No-Go' (Before Starting Post-Clock)",
+        items: [
+            "<b>Physical & Functional Pass:</b> Did the technology pass functional testing under normal site production conditions?",
+            "<b>48-Hour Data Burn-In:</b> Have all new and existing meters transmitted clean, gap-free, properly calibrated data to the server for at least 48–72 hours?",
+            "<b>Sign the Memo:</b> Has the M&V Lead issued the formal <b>Memo to Proceed</b> establishing the exact timestamp the Post-Implementation Period begins?"
+        ]
+    },
+    {
+        id: "gate-4",
+        title: "Gate 4: Model Statistical Pass/Fail Scorecard (The 'Big 6' Numbers)",
+        items: [
+            "<b>R<sup>2</sup> (Explanatory Power):</b> Must be <span class='pill'>&ge; 0.75</span>",
+            "<b>CV(RMSE) (Model Scatter):</b> Must be <span class='pill'>&le; 20%</span> (for daily models)",
+            "<b>NDBE (Net Determination Bias Error):</b> Must be <span class='pill'>&le; 0.005%</span>",
+            "<b>F-Statistic p-value (Overall Model Significance):</b> Must be <span class='pill'>< 0.05</span>",
+            "<b>t-Statistic (Every Independent Variable):</b> Must be <span class='pill'>&ge; 2.0</span> (with p-value <span class='pill'>< 0.05</span>)",
+            "<b>Autocorrelation (&rho;):</b> Must be <span class='pill'>< 0.7</span> <i>(and factored into effective degrees of freedom n')</i>",
+            "<b>Visual Sanity Check:</b> Do coefficient signs make physical sense (e.g., energy goes up when production goes up), and is the residual plot flat/homoscedastic?"
+        ]
+    },
+    {
+        id: "gate-5",
+        title: "Gate 5: Final Savings & Uncertainty Sign-Off (DOE Reviewer Checks)",
+        items: [
+            "<b>Apply Model to Standard Conditions:</b> Project both Baseline and Post models onto the exact same conditions (e.g., TMY weather + typical annual production).",
+            "<b>Deduct Non-Routine Events (NREs):</b> Adjust for static changes (omit temporary plant shutdowns; calculate engineering adjustments for added shifts).",
+            "<b>Pass the Uncertainty Limit:</b> Is the Fractional Savings Uncertainty (FSU) <span class='pill'>< 50% at 68% confidence</span>? <i>(Include sensor measurement error if savings are small).</i>",
+            "<b>Report Unbundled & Bundled Results:</b> Report raw physical savings (kWh, therms, gallons) clearly alongside the weighted Total Value Index (TVI)."
+        ]
+    }
+];
+
+const STORAGE_KEY = 'itv_mv_quick_gates';
+
+function renderGates() {
+    const root = document.getElementById('gates-root');
+    root.innerHTML = '';
+    const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+
+    gateData.forEach((gate, gIdx) => {
+        const card = document.createElement('div');
+        card.className = 'gate-card';
+        card.id = `card-${gate.id}`;
+
+        const header = document.createElement('div');
+        header.className = 'gate-header';
+        header.innerHTML = `
+            <h2 class="gate-title">${gate.title}</h2>
+            <span class="gate-badge" id="badge-${gate.id}">0 / 0</span>
+        `;
+
+        const body = document.createElement('div');
+        body.className = 'gate-body';
+
+        gate.items.forEach((text, iIdx) => {
+            const itemId = `gate-${gIdx}-${iIdx}`;
+            const isChecked = !!savedState[itemId];
+
+            const row = document.createElement('div');
+            row.className = `checklist-item ${isChecked ? 'checked' : ''}`;
+            row.id = `wrap-${itemId}`;
+
+            const cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.id = itemId;
+            cb.checked = isChecked;
+            cb.dataset.gate = gate.id;
+            cb.onchange = () => toggleCheck(itemId);
+
+            const label = document.createElement('label');
+            label.htmlFor = itemId;
+            label.innerHTML = text;
+
+            row.appendChild(cb);
+            row.appendChild(label);
+            body.appendChild(row);
+        });
+
+        card.appendChild(header);
+        card.appendChild(body);
+        root.appendChild(card);
+    });
+
+    updateProgress();
+}
+
+function toggleCheck(itemId) {
+    const cb = document.getElementById(itemId);
+    const wrap = document.getElementById(`wrap-${itemId}`);
+    const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+
+    if (cb.checked) {
+        wrap.classList.add('checked');
+        savedState[itemId] = true;
+    } else {
+        wrap.classList.remove('checked');
+        delete savedState[itemId];
+    }
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(savedState));
+    updateProgress();
+}
+
+function updateProgress() {
+    let totalAll = 0;
+    let checkedAll = 0;
+
+    gateData.forEach(gate => {
+        const cbs = document.querySelectorAll(`input[data-gate="${gate.id}"]`);
+        const total = cbs.length;
+        let checked = 0;
+        cbs.forEach(c => { if (c.checked) checked++; });
+
+        totalAll += total;
+        checkedAll += checked;
+
+        const badge = document.getElementById(`badge-${gate.id}`);
+        const card = document.getElementById(`card-${gate.id}`);
+        badge.textContent = `${checked} / ${total}`;
+
+        if (checked === total && total > 0) {
+            badge.style.background = '#dcfce7';
+            badge.style.color = '#15803d';
+            card.classList.add('complete');
+        } else {
+            badge.style.background = 'var(--primary-light)';
+            badge.style.color = 'var(--primary)';
+            card.classList.remove('complete');
+        }
+    });
+
+    const pct = totalAll > 0 ? Math.round((checkedAll / totalAll) * 100) : 0;
+    document.getElementById('overall-text').textContent = `${checkedAll} / ${totalAll} (${pct}%)`;
+    document.getElementById('overall-bar').style.width = `${pct}%`;
+}
+
+function resetGates() {
+    if (confirm("Reset all Stage-Gate checks?")) {
+        localStorage.removeItem(STORAGE_KEY);
+        renderGates();
+    }
+}
+
+document.addEventListener('DOMContentLoaded', renderGates);
+</script>
+
+</body>
+</html>
