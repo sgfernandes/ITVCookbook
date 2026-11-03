@@ -11,8 +11,9 @@
             --success: #28a745;
             --bg: #f4f6f9;
             --text: #333;
-            --border: #ddd;
+            --border: #dce1e7;
         }
+        * { box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             line-height: 1.6;
@@ -29,6 +30,31 @@
             border-radius: 8px;
             box-shadow: 0 2px 15px rgba(0,0,0,0.05);
         }
+        .nav-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 15px;
+        }
+        .nav-link {
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--primary);
+            background: var(--primary-light);
+            transition: all 0.2s;
+        }
+        .nav-link:hover {
+            background: #cfe2f3;
+        }
+        .nav-link.active {
+            background: var(--primary);
+            color: #fff;
+        }
         header {
             border-bottom: 2px solid var(--primary);
             padding-bottom: 20px;
@@ -43,15 +69,17 @@
             margin: 0;
             color: var(--primary);
             font-size: 1.8rem;
+            line-height: 1.2;
         }
         .subtitle {
             color: #666;
             font-size: 0.95rem;
-            margin-top: 5px;
+            margin-top: 6px;
         }
         .controls {
             display: flex;
-            gap: 10px;
+            gap: 8px;
+            flex-wrap: wrap;
         }
         button {
             background: var(--primary);
@@ -61,6 +89,7 @@
             border-radius: 4px;
             cursor: pointer;
             font-size: 0.9rem;
+            font-weight: 500;
             transition: background 0.2s;
         }
         button:hover {
@@ -117,7 +146,7 @@
             background: #f1f5f9;
         }
         .stage-title {
-            font-size: 1.2rem;
+            font-size: 1.15rem;
             font-weight: 600;
             color: var(--primary);
             margin: 0;
@@ -181,7 +210,7 @@
         @media print {
             body { background: #fff; padding: 0; }
             .container { box-shadow: none; max-width: 100%; padding: 0; }
-            .controls { display: none; }
+            .controls, .nav-bar { display: none; }
             .stage-content.collapsed { display: block !important; }
         }
     </style>
@@ -189,11 +218,12 @@
 <body>
 
 <div class="container">
-    <nav style="display:flex; gap:10px; margin-bottom:20px; border-bottom:1px solid #ddd; padding-bottom:15px;">
-    <a href="index.html" style="text-decoration:none; padding:8px 16px; border-radius:20px; font-size:0.9rem; font-weight:600; background:#005a9c; color:#fff;">📋 Full Lifecycle Checklist</a>
-    <a href="quick-gate.html" style="text-decoration:none; padding:8px 16px; border-radius:20px; font-size:0.9rem; font-weight:600; background:#e6f0f8; color:#005a9c;">⚡ 1-Page Stage-Gate Cheat Sheet</a>
-    <a href="baseline-uncertainty.html" style="text-decoration:none; padding:8px 16px; border-radius:20px; font-size:0.9rem; font-weight:600; background:#e6f0f8; color:#005a9c;">📈 Baseline &amp; Uncertainty Simulator</a>
-</nav>
+    <nav class="nav-bar">
+        <a href="index.html" class="nav-link active">📋 Full Lifecycle Checklist</a>
+        <a href="quick-gate.html" class="nav-link">⚡ 1-Page Stage-Gate Cheat Sheet</a>
+        <a href="baseline-uncertainty.html" class="nav-link">📈 Baseline & Uncertainty Simulator</a>
+    </nav>
+
     <header>
         <div>
             <h1>M&V Cookbook for ITV</h1>
