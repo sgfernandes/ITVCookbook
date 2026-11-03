@@ -138,7 +138,29 @@
         .ms-dot.on { background: var(--success); }
         .lc-swatch { display: inline-flex; align-items: center; justify-content: center; min-width: 34px; height: 20px; padding: 0 4px; border-radius: 4px; border: 1px solid var(--border); font-size: 0.75rem; }
         .roadmap { margin-top: 12px; font-size: 0.85rem; color: var(--muted); background: #f8fafc; border: 1px dashed var(--border); border-radius: 6px; padding: 8px 12px; }
-        .detail a, .hint a { color: var(--primary); }
+        .detail a, .hint a, .roadmap a { color: var(--primary); }
+        /* AgentM&V preview */
+        .amv { margin-top: 36px; border: 2px dashed #b9cde0; border-radius: 8px; padding: 20px; background: linear-gradient(180deg, #f7fbff, #fff); }
+        .amv-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+        .amv-head h2 { margin: 6px 0 4px; }
+        .amv-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; color: #fff; background: #1f9d55; padding: 3px 9px; border-radius: 10px; }
+        .amv-stages { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+        .amv-stage { background: #fff; border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; font-size: 0.8rem; }
+        .amv-stage .n { font-weight: 700; color: var(--primary); margin-bottom: 4px; }
+        .amv-stage .d { padding: 3px 0; border-top: 1px solid #f0f2f5; }
+        .amv-stage .d b { color: var(--primary); margin-right: 4px; }
+        .amv-stage .d i { display: block; color: var(--muted); font-size: 0.72rem; }
+        .amv-lights { display: flex; gap: 18px; flex-wrap: wrap; font-size: 0.8rem; color: #555; margin-top: 10px; }
+        .amv-lights span { display: inline-flex; gap: 6px; align-items: center; }
+        .amv-l { display: inline-block; width: 13px; height: 13px; border-radius: 50%; flex: 0 0 13px; margin-top: 3px; }
+        .amv-l.g { background: var(--green); } .amv-l.y { background: var(--yellow); } .amv-l.r { background: var(--red); } .amv-l.b { background: var(--primary); }
+        .amv-tag { font-size: 0.72rem; font-weight: 600; color: #8a6400; background: #fff4d6; padding: 2px 8px; border-radius: 10px; margin-left: 6px; vertical-align: middle; }
+        .amv-flow { border-left: 3px solid var(--primary-light); margin-left: 6px; padding-left: 14px; }
+        .amv-step { display: flex; gap: 10px; align-items: flex-start; font-size: 0.86rem; padding: 7px 0; transition: opacity 0.4s, transform 0.4s; }
+        .amv-flow.playing .amv-step { opacity: 0.15; transform: translateX(6px); }
+        .amv-flow.playing .amv-step.shown { opacity: 1; transform: none; }
+        .amv-actions { display: flex; gap: 6px; align-items: center; margin-top: 5px; }
+        @media (max-width: 1000px) { .amv-stages { grid-template-columns: 1fr; } }
         .row-form { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
         .row-form > * { flex: 1 1 140px; }
         .row-form button { flex: 0 0 auto; }
@@ -234,9 +256,59 @@
         <span><span class="lc-swatch lc-current"><i class="ms-dot on"></i><i class="ms-dot"></i></span>Current stage: milestones done / to do</span>
         <span><span class="lc-swatch">—</span>Upcoming stage (open questions already tagged to it)</span>
     </div>
-    <div class="roadmap">🧭 <b>Planned:</b> map each stage to the AgentM&V decision framework (agents, decision nodes and governance lights) in a future release.</div>
+    <div class="roadmap">🧭 <b>Coming soon:</b> each stage backed by AgentM&V agents and governed decisions. <a href="#agentmv-preview">See the preview ↓</a></div>
 
     <div id="detail"></div>
+
+    <section class="amv" id="agentmv-preview">
+        <div class="amv-head">
+            <div>
+                <span class="amv-badge">COMING SOON</span>
+                <h2>🧭 AgentM&V integration — preview</h2>
+                <div class="subtitle">Each Cookbook stage will be backed by AgentM&V agents that run the M&V analysis. Every decision is recorded, and anything high-stakes waits for a human sign-off.</div>
+            </div>
+            <button class="secondary" id="amv-play" onclick="AMV.play()">▶ Play example</button>
+        </div>
+
+        <h3>How the Cookbook stages will map to AgentM&V decisions</h3>
+        <div class="amv-stages">
+            <div class="amv-stage"><div class="n">1. Planning</div>
+                <div class="d"><b>INGEST</b> Read applications, plans, site documents</div>
+                <div class="d"><b>D1</b> Facility facts, boundary &amp; periods <i>A1 Facility Ingestor</i></div>
+                <div class="d"><b>D3</b> IPMVP option &amp; boundary <i>A3 Protocol Router</i></div></div>
+            <div class="amv-stage"><div class="n">2. Baseline</div>
+                <div class="d"><b>D2</b> Data quality &amp; drift mask <i>A2 Data Validator</i></div>
+                <div class="d"><b>D4</b> Model grid + Guideline 14 gate <i>A4 Baseline Modeler</i></div>
+                <div class="d"><b>D5</b> Pareto model selection <i>A4 Baseline Modeler</i></div></div>
+            <div class="amv-stage"><div class="n">3. Implementation</div>
+                <div class="d"><b>D1</b> Commit install date &amp; reporting period</div>
+                <div class="d"><b>D2</b> Validate post-period data streams</div></div>
+            <div class="amv-stage"><div class="n">4. Post-Implementation</div>
+                <div class="d"><b>D2</b> Same QA rules as baseline</div>
+                <div class="d"><b>D6</b> Non-routine event detection <i>A5 NRE Reconciler</i></div></div>
+            <div class="amv-stage"><div class="n">5. Analysis &amp; Reporting</div>
+                <div class="d"><b>D6</b> Savings with adjustments <i>A5 NRE Reconciler</i></div>
+                <div class="d"><b>D7</b> Critique, uncertainty &amp; certification <i>A6 Compliance Critic</i></div>
+                <div class="d"><b>D8</b> Auditable report <i>A7 Report Generator</i></div></div>
+        </div>
+        <div class="amv-lights">
+            <span><i class="amv-l g"></i><b>Green</b>: routine, checks passed, runs automatically</span>
+            <span><i class="amv-l y"></i><b>Yellow</b>: agent proposal, needs a human to confirm</span>
+            <span><i class="amv-l r"></i><b>Red</b>: high-stakes or failed check, needs a signed decision</span>
+        </div>
+
+        <h3>Example: a project entering the Baseline stage <span class="amv-tag">Illustrative only: sample numbers, not project data</span></h3>
+        <div class="amv-flow" id="amv-flow">
+            <div class="amv-step" data-i="0"><i class="amv-l g"></i><div><b>INGEST</b> 12 months of 15-minute steam, electricity and production-historian data loaded for the four affected lines.</div></div>
+            <div class="amv-step" data-i="1"><i class="amv-l g"></i><div><b>D2 · Data Validator</b> 2.1% of intervals masked (meter gaps); no sensor drift detected. Within limits, so it continues automatically.</div></div>
+            <div class="amv-step" data-i="2"><i class="amv-l g"></i><div><b>D4 · Baseline Modeler</b> 8 candidate models fitted (throughput, product mix, schedule); 3 pass the Guideline 14 gate (CV(RMSE) ≤ 20%, NMBE within limits).</div></div>
+            <div class="amv-step" data-i="3"><i class="amv-l y"></i><div><b>D5 · Baseline Modeler</b> Proposes a regression on throughput + product mix (R² 0.86, CV(RMSE) 11%).
+                <div class="amv-actions"><button class="small" disabled>✓ Approve</button><button class="small secondary" disabled>Choose another model</button><span class="hint">Awaiting tech lead</span></div></div></div>
+            <div class="amv-step" data-i="4"><i class="amv-l y"></i><div><b>Gates 2 &amp; 4</b> Dashboard checklist items pre-filled from the D2/D4/D5 evidence; the M&V lead reviews and signs off.</div></div>
+            <div class="amv-step" data-i="5"><i class="amv-l b"></i><div><b>Ledger</b> Each decision saved as a signed, tamper-evident record (e.g. <code>D5 · 3f9a…c21 · approved by tech lead</code>). The chat will be able to answer "why was this model chosen?" from this evidence.</div></div>
+        </div>
+        <div class="hint" style="margin-top:10px">Based on the AgentM&V research prototype (agents A1–A7, decision nodes INGEST/D1–D8, traffic-light governance). Not yet connected to this dashboard.</div>
+    </section>
 </div>
 
 <!-- Stage gate modal -->
@@ -301,6 +373,21 @@
     </form>
 </aside>
 
+<script>
+// AgentM&V preview: replay the illustrative walkthrough step by step.
+window.AMV = {
+    play() {
+        const flow = document.getElementById("amv-flow");
+        const steps = [...flow.querySelectorAll(".amv-step")];
+        flow.classList.add("playing");
+        steps.forEach((s) => s.classList.remove("shown"));
+        steps.forEach((s, i) => setTimeout(() => {
+            s.classList.add("shown");
+            if (i === steps.length - 1) setTimeout(() => flow.classList.remove("playing"), 1500);
+        }, 250 + i * 900));
+    }
+};
+</script>
 <script src="data/portfolio.js"></script>
 <script src="data/knowledge.js"></script>
 <script src="js/dashboard.js"></script>
