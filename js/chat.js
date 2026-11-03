@@ -26,8 +26,7 @@ let useFallbacks = true;
 function buildStableSystem() {
   const fw = window.ITV_PORTFOLIO.framework;
   const stages = fw.stages.map((s) =>
-    `Stage ${s.id} ${s.name}: ${s.objective}\n  Milestones: ${s.milestones.join("; ")}\n  AgentM&V decisions: ${s.agentmv.join(", ")}\n  Exit gate (${s.gate.id} — ${s.gate.title}): ${s.gate.items.join("; ")}`).join("\n");
-  const steps = fw.agentmvSteps.map((d) => `${d.id} [${d.agent}; default light ${d.light}] ${d.name}: ${d.does}`).join("\n");
+    `Stage ${s.id} ${s.name}: ${s.objective}\n  Milestones: ${s.milestones.join("; ")}\n  Cookbook checklist sections: ${(s.checklist || []).join("; ")}\n  Exit gate (${s.gate.id} — ${s.gate.title}): ${s.gate.items.join("; ")}`).join("\n");
   const docs = KB.map((d) =>
     `<document id="${d.id}" project="${d.project}" date="${d.date}" source="${d.source}">\n<title>${d.title}</title>\n${d.text}\n</document>`).join("\n\n");
 
@@ -38,18 +37,12 @@ How to answer:
 - If the sources do not contain the answer, say so plainly and suggest who to ask (site, vendor, tech lead) — do not guess numbers.
 - Distinguish vendor/applicant CLAIMS from verified results. No project has verified savings yet unless the dashboard history says so.
 - "What happened in a stage" questions: use the dashboard stage history first (it is the system of record for progress), then supporting documents.
-- When useful, relate answers to the Cookbook stage/gate and the AgentM&V decision nodes (INGEST, D1–D8) and their governance lights.
-- The live dashboard state overrides older documents for current stage, milestones, question status and AgentM&V statuses.
+- When useful, relate answers to the Cookbook stage, its checklist sections and its exit gate (what is needed to pass the next gate).
+- The live dashboard state overrides older documents for current stage, milestones and question status.
 - Be concise: short paragraphs, bullet lists or small tables. Markdown is rendered.
 
 ## Framework: ITV M&V Cookbook lifecycle (5 stages)
 ${stages}
-
-## Framework: AgentM&V (neuro-symbolic multi-agent M&V system)
-Layer 1 ingest/retrieval; Layer 2 deterministic engine (ASHRAE Guideline 14 statistics, statutory gate, Pareto frontier, change-point/NRE detection); Layer 3 agents A1–A7 orchestrated over the decision DAG INGEST → D1…D8; Layer 4 signed Merkle ledger with traffic-light governance.
-${steps}
-Governance: green = ${fw.governance.green} Yellow = ${fw.governance.yellow} Red = ${fw.governance.red}
-Note: AgentM&V was built around interval energy time-series baselines; for these Option B projects with non-energy KPIs (quality, NEBs, cost/TCE) the mapping is conceptual — say so when it matters.
 
 ## Project documents
 ${docs}`;
@@ -116,7 +109,7 @@ function renderSuggestions() {
   const scope = $("chat-scope").value;
   const n = projName(scope);
   const qs = scope === "all"
-    ? ["Which stage is each project in and what's blocking Gate 1?", "Compare open questions across projects", "Which projects are non-standard M&V and why?", "How do the projects map to AgentM&V decisions?"]
+    ? ["Which stage is each project in and what's blocking Gate 1?", "Compare open questions across projects", "Which projects are non-standard M&V and why?", "What does each project still need to pass Gate 1?"]
     : [`What happened in each stage so far for ${n}?`, `What are the open questions for ${n} and who should answer them?`, `What is the M&V boundary and KPI set for ${n}?`, `What risks could delay ${n}'s baseline stage?`];
   $("suggest").innerHTML = qs.map((q) => `<button type="button">${esc(q)}</button>`).join("");
   [...$("suggest").children].forEach((b, i) => b.onclick = () => Chat.ask(qs[i]));
@@ -171,8 +164,12 @@ function offlineAnswer(q, scope) {
       return `<h4>${esc(p.short)} — ${oq.length} open questions</h4><ul>${oq.map((x) => `<li>[S${x.stage}] ${esc(x.text)}</li>`).join("")}</ul>`;
     }).join("");
   }
-  if (/agent|d[1-8]\b|framework|governance|ingest/.test(ql)) {
-    html += ps.map((p) => `<h4>${esc(p.short)} — AgentM&V</h4><ul>${Object.entries(p.agentmv).map(([k, v]) => `<li><b>${esc(k)}</b> ${esc(v.status)}${v.note ? " — " + esc(v.note) : ""}</li>`).join("")}</ul>`).join("");
+  if (/gate|checklist|criteria|cookbook|next/.test(ql)) {
+    html += ps.map((p) => {
+      const s = Dash.stage(p.currentStage);
+      return `<h4>${esc(p.short)} — ${esc(s.gate.id)}: ${esc(s.gate.title)}</h4><ul>${s.gate.items.map((g) => `<li>${esc(g)}</li>`).join("")}</ul>` +
+        `<p><b>Milestones:</b> ${s.milestones.map((m, i) => `${(p.milestonesDone || []).includes(i) ? "✓" : "○"} ${esc(m)}`).join(" · ")}</p>`;
+    }).join("");
   }
   const hits = search(q, scope);
   if (hits.length) {

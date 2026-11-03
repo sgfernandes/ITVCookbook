@@ -6,17 +6,17 @@
 // Assessment Presentation to DOE 2026-09-29, Team A_ITV Projects Profile, project
 // profiles (projects/*.md), application submissions (2026-01-29).
 window.ITV_PORTFOLIO = {
-  version: "2026-11-03.1",
+  version: "2026-11-03.2",
   asOf: "2026-11-03",
   team: "Team A — Nick, Sam, Ana Isabel",
 
-  // ── Framework: ITV M&V Cookbook lifecycle × AgentM&V decision DAG ──────────
+  // ── Framework: ITV M&V Cookbook lifecycle (stages, milestones, exit gates) ──
   framework: {
     stages: [
       {
         id: 1, name: "Planning", objective: "Establish and document an M&V strategy in a formal M&V Plan.",
         milestones: ["Application reviewed", "Technology evaluation review (Sections 1–20)", "Initial technology assessment to DOE", "Site/vendor questions resolved", "M&V Plan drafted", "Gate 1 sign-off"],
-        agentmv: ["INGEST", "D1", "D3"],
+        checklist: ["Gather Required Inputs", "Execute Planning Methods", "Complete Stage 1 Outputs & Milestones"],
         gate: { id: "Gate 1", title: "Project Setup & Strategy (before buying/installing meters)", items: [
           "Measurement boundary drawn around the specific sub-system (IPMVP Option B), not the whole facility",
           "Load classified (VLVS ⇒ continuous metering mandatory)",
@@ -27,7 +27,7 @@ window.ITV_PORTFOLIO = {
       {
         id: 2, name: "Baseline", objective: "Characterize the incumbent system and develop a predictive baseline model.",
         milestones: ["Meters & DAS installed", "Baseline data collection", "Data QA/QC", "Baseline model built", "Model scorecard passed"],
-        agentmv: ["D2", "D4", "D5"],
+        checklist: ["Document Baseline Context & Inputs", "Data Collection & Instrumentation", "Data Processing, Screening, & Assessment", "Baseline Model Development", "Complete Stage 2 Outputs"],
         gate: { id: "Gates 2 & 4", title: "Data Hygiene & Sufficiency + Model Statistical Scorecard", items: [
           "Vendor sensor readings cross-checked (clamp meter, secondary logger or physics check)",
           "Outliers (±3σ) and nulls flagged and confirmed with site staff before removal",
@@ -38,7 +38,7 @@ window.ITV_PORTFOLIO = {
       {
         id: 3, name: "Implementation", objective: "Verify installation/commissioning of the new technology and initiate post-implementation data streams.",
         milestones: ["Equipment installed", "Functional testing", "48–72 h data burn-in", "Memo to Proceed issued"],
-        agentmv: ["D1", "D2"],
+        checklist: ["Gather Required Inputs", "Execute Implementation & Commissioning Methods", "Complete Stage 3 Outputs (Gate to Stage 4)"],
         gate: { id: "Gate 3", title: "Commissioning Go / No-Go (before starting post-clock)", items: [
           "Technology passed functional testing under normal production conditions",
           "All meters transmitted clean, gap-free, calibrated data for 48–72 hours",
@@ -48,7 +48,7 @@ window.ITV_PORTFOLIO = {
       {
         id: 4, name: "Post-Implementation", objective: "Collect, process, and validate operational data from the new technology.",
         milestones: ["Post-period data collection", "Same QA/QC rules as baseline", "Reliability & deviations tracked", "Non-routine events logged"],
-        agentmv: ["D2", "D6"],
+        checklist: ["Document Post-Implementation Context & Inputs", "Data Collection, Processing, & Assessment", "Post-Implementation Model Development", "Complete Stage 4 Outputs"],
         gate: { id: "Coverage check", title: "Post-period data sufficiency", items: [
           "Post-period independent variables within 90%–110% of the baseline range",
           "Post data passed the same QA/QC rules as the baseline",
@@ -58,7 +58,7 @@ window.ITV_PORTFOLIO = {
       {
         id: 5, name: "Analysis & Reporting", objective: "Calculate verified savings, apply adjustments, quantify uncertainty, and produce the final report.",
         milestones: ["Savings calculated at standard conditions", "Routine & non-routine adjustments", "Uncertainty (FSU) quantified", "Critic review & certification", "Final report"],
-        agentmv: ["D6", "D7", "D8"],
+        checklist: ["Execute Analysis Methods", "Complete Stage 5 Outputs"],
         gate: { id: "Gate 5", title: "Final Savings & Uncertainty Sign-Off (DOE reviewer checks)", items: [
           "Baseline and post models projected onto the same standard conditions",
           "NREs deducted (static changes adjusted, temporary shutdowns omitted)",
@@ -66,24 +66,7 @@ window.ITV_PORTFOLIO = {
           "Unbundled physical savings reported alongside the weighted Total Value Index"
         ] }
       }
-    ],
-    // AgentM&V (agentmv/): Layer 3 agents over the CMDP decision DAG, Layer 4 traffic-light governance.
-    agentmvSteps: [
-      { id: "INGEST", agent: "Layer 1", name: "Telemetry & document ingest", does: "Load telemetry and parse plans, applications and site documents; hybrid (BM25 + dense) standards retrieval.", light: "green" },
-      { id: "D1", agent: "A1 Facility & Telemetry Ingestor", name: "Facility facts, boundary & periods", does: "Extract grounded facility facts, measurement boundary, baseline/reporting periods and ECM install date from unstructured documents.", light: "yellow" },
-      { id: "D2", agent: "A2 Data Quality & Fault Validator", name: "Data quality & drift mask", does: "Mask gaps/outliers, detect sensor drift; red if >40% masked or energy completeness <50%.", light: "green" },
-      { id: "D3", agent: "A3 Protocol & Boundary Router", name: "IPMVP option & boundary", does: "Route to an IPMVP option (A/B/C/D) from protocol facts; red if undecided.", light: "yellow" },
-      { id: "D4", agent: "A4 Pareto Baseline Modeler", name: "Baseline model grid & statutory gate", does: "Fit candidate models (2P–5P, TOWT, regression) and apply the Guideline 14 statistical gate.", light: "green" },
-      { id: "D5", agent: "A4 Pareto Baseline Modeler", name: "Pareto model selection", does: "Rank the certified Pareto frontier and select the baseline model; red if the frontier is empty.", light: "yellow" },
-      { id: "D6", agent: "A5 Causal & NRE Reconciler", name: "Savings & non-routine events", does: "Avoided energy with routine/non-routine adjustments; CUSUM / Bai-Perron break detection; red on unexplained breaks.", light: "yellow" },
-      { id: "D7", agent: "A6 Adversarial Compliance Critic", name: "Certification & FSU", does: "Adversarial compliance critique, fractional savings uncertainty, certify or block — always a signed (red) human decision.", light: "red" },
-      { id: "D8", agent: "A7 Auditable Report Generator", name: "Auditable report", does: "Generate the report with every number traced to a signed ledger entry.", light: "yellow" }
-    ],
-    governance: {
-      green: "Deterministic step, all gates passed — executes without intervention.",
-      yellow: "Agent proposal or soft warning — pauses for human confirmation.",
-      red: "High-liability determination, gate failure, or override — requires a signed manual decision by the certifying engineer."
-    }
+    ]
   },
 
   // ── Projects ────────────────────────────────────────────────────────────────
@@ -115,11 +98,6 @@ window.ITV_PORTFOLIO = {
       timeline: { install: "Install & commission within ~9 months (some uncertainty)", baseline: "New meters + >5 years of plant data", post: "Operate up to 12 months", duration: "2+ years" },
       currentStage: 1,
       milestonesDone: [0, 1, 2],
-      agentmv: {
-        "1:INGEST": { status: "done", note: "Application, Team A review deck and DOE assessment ingested." },
-        "1:D1": { status: "review", note: "Facility facts and four-line boundary drafted; line boundaries/modes and storage dispatch rules await site confirmation." },
-        "1:D3": { status: "review", note: "Option B proposed (retrofit isolation on affected lines); tech-lead verification pending per DOE guidance." }
-      },
       openQuestions: [
         { id: "q1", text: "What exact line boundaries and operating modes are in scope?", stage: 1, source: "Team A review 2026-07-29", status: "open" },
         { id: "q2", text: "How are storage dispatch rules defined (peak vs non-peak)?", stage: 1, source: "Team A review 2026-07-29", status: "open" },
@@ -166,11 +144,6 @@ window.ITV_PORTFOLIO = {
       timeline: { install: "Install & commission within ~10 months", baseline: "12 months of baseline collection", post: "Operate up to 12 months", duration: "12 months (M&V)" },
       currentStage: 1,
       milestonesDone: [0, 1, 2],
-      agentmv: {
-        "1:INGEST": { status: "done", note: "Application, Team A review deck and DOE assessment ingested." },
-        "1:D1": { status: "review", note: "Cycle-level boundary drafted (9 ladles, ~60 preheat cycles/week); KPI weighting and NEB acceptance criteria unconfirmed." },
-        "1:D3": { status: "review", note: "Option B with matched-cycle analysis + NEBs proposed; non-standard M&V flag." }
-      },
       openQuestions: [
         { id: "q1", text: "What are the acceptance thresholds for thermal-uniformity metrics?", stage: 1, source: "Team A review 2026-07-29", status: "open" },
         { id: "q2", text: "How will refractory wear be measured and trended?", stage: 1, source: "Team A review 2026-07-29", status: "open" },
@@ -215,11 +188,6 @@ window.ITV_PORTFOLIO = {
       timeline: { install: "Install within 12 months (48 weeks)", baseline: "Up to 12 months of baseline data", post: "Operate >12 months", duration: "12 months (M&V)" },
       currentStage: 1,
       milestonesDone: [0, 1, 2],
-      agentmv: {
-        "1:INGEST": { status: "done", note: "Team A review deck and DOE assessment ingested; no CEIA application PDF in the workspace (profile built from workbook + public material)." },
-        "1:D1": { status: "review", note: "Station boundary drafted; nameplates, kW per batch and chiller inclusion still unknown." },
-        "1:D3": { status: "review", note: "Option B station-level isolation with a joint savings/quality decision rule proposed." }
-      },
       openQuestions: [
         { id: "q1", text: "How much energy is used over one shift (kW per batch)?", stage: 1, source: "Team A review 2026-07-29", status: "open" },
         { id: "q2", text: "What are the nameplates of the existing and proposed heating elements?", stage: 1, source: "Team A review 2026-07-29", status: "open" },
@@ -266,11 +234,6 @@ window.ITV_PORTFOLIO = {
       timeline: { install: "Install & commission in 6–9 months (discussion: ~6 months set-up, 3 months start-up data)", baseline: "Up to 12 months accessible", post: "6–9 months data collection; operate up to 12 months", duration: "24 months (M&V)" },
       currentStage: 1,
       milestonesDone: [0, 1, 2],
-      agentmv: {
-        "1:INGEST": { status: "done", note: "Application, CEC study reference, Team A review and DOE assessment ingested." },
-        "1:D1": { status: "review", note: "Boundary drafted (heater → storage → HTF → steam HX); existing sensors, cogen ownership and PRV costs unconfirmed." },
-        "1:D3": { status: "review", note: "Option B with physics-informed reduced-order model; equivalent thermal service definition is the open protocol fact." }
-      },
       openQuestions: [
         { id: "q1", text: "How is equivalent thermal service defined for comparison?", stage: 1, source: "Team A review 2026-07-29", status: "open" },
         { id: "q2", text: "Which dispatch constraints are fixed vs operator-tunable?", stage: 1, source: "Team A review 2026-07-29", status: "open" },
@@ -318,11 +281,6 @@ window.ITV_PORTFOLIO = {
       timeline: { install: "Install & commission within 8 months", baseline: "12 months historical + new baseline collection", post: "Operate up to 12 months", duration: "18 months (M&V)" },
       currentStage: 1,
       milestonesDone: [0, 1, 2],
-      agentmv: {
-        "1:INGEST": { status: "done", note: "Application, Team A review, DOE assessment and CombinedTestData.xlsx (simulation cases) ingested." },
-        "1:D1": { status: "review", note: "Boundary and counterfactual structure drafted; baseline controller logic and override conditions unconfirmed." },
-        "1:D3": { status: "review", note: "Option B with interval-level Digital Shadow counterfactual proposed; TCE boundaries/tariff components to confirm." }
-      },
       openQuestions: [
         { id: "q1", text: "What baseline controller logic defines the counterfactual?", stage: 1, source: "Team A review 2026-07-29", status: "open" },
         { id: "q2", text: "How are battery degradation costs incorporated into claims?", stage: 1, source: "Team A review 2026-07-29", status: "open" },

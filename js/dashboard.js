@@ -6,9 +6,6 @@
 
   const BASE = window.ITV_PORTFOLIO;
   const KEY = "itv_portfolio_state_v1";
-  const STATUS = {
-    pending: "Not started", active: "In progress", review: "Awaiting review", blocked: "Blocked", done: "Done"
-  };
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const clone = (o) => JSON.parse(JSON.stringify(o));
@@ -29,6 +26,7 @@
     }
     // Framework always comes from the shared file so fixes to it propagate.
     state.framework = clone(BASE.framework);
+    state.projects.forEach((p) => delete p.agentmv); // legacy field from earlier versions
   }
 
   function save() {
@@ -39,9 +37,7 @@
   }
 
   function stage(id) { return state.framework.stages.find((s) => s.id === id); }
-  function step(id) { return state.framework.agentmvSteps.find((s) => s.id === id); }
   function project(id) { return state.projects.find((p) => p.id === id); }
-  function stepStatus(p, stageId, stepId) { return (p.agentmv[`${stageId}:${stepId}`] || {}).status || "pending"; }
 
   function logEvent(p, ev) {
     p.history.push(Object.assign({ date: today(), stage: p.currentStage, source: "Dashboard update", local: true }, ev));
@@ -73,14 +69,14 @@
   }
 
   function openQs(p) { return p.openQuestions.filter((q) => q.status !== "resolved"); }
-  function reviewCount(p) { return Object.values(p.agentmv).filter((a) => a.status === "review" || a.status === "blocked").length; }
   function lastEvent(p) { return p.history.slice().sort((a, b) => a.date.localeCompare(b.date)).pop(); }
 
   function renderTiles() {
     const ps = state.projects;
     const byStage = state.framework.stages.map((s) => [s.name, ps.filter((p) => p.currentStage === s.id).length]).filter(([, n]) => n);
     const oq = ps.reduce((n, p) => n + openQs(p).length, 0);
-    const rv = ps.reduce((n, p) => n + reviewCount(p), 0);
+    const msDone = ps.reduce((n, p) => n + (p.milestonesDone || []).length, 0);
+    const msTotal = ps.reduce((n, p) => n + stage(p.currentStage).milestones.length, 0);
     const last = ps.map(lastEvent).filter(Boolean).sort((a, b) => a.date.localeCompare(b.date)).pop();
     const gate1 = ps.filter((p) => p.currentStage > 1).length;
     $("tiles").innerHTML = [
@@ -88,7 +84,7 @@
       [byStage.map(([n, c]) => `${c}`).join(" / "), "In " + byStage.map(([n]) => n).join(" / ")],
       [`${gate1}/${ps.length}`, "Passed Gate 1 (M&V Plan)"],
       [oq, "Open site/vendor questions"],
-      [rv, "AgentM&V decisions awaiting human review"],
+      [`${msDone}/${msTotal}`, "Current-stage milestones complete"],
       [last ? last.date : "—", "Latest activity" + (last ? `: ${last.title}` : "")]
     ].map(([v, l]) => `<div class="tile"><div class="v">${esc(v)}</div><div class="l">${esc(l)}</div></div>`).join("");
   }
@@ -101,7 +97,7 @@
   function renderPipeline() {
     $("pipeline").innerHTML = state.framework.stages.map((s) => {
       const cards = state.projects.filter((p) => p.currentStage === s.id).map((p) => {
-        const oq = openQs(p).length, rv = reviewCount(p);
+        const oq = openQs(p).length;
         return `<div class="card ${p.id === selectedId ? "selected" : ""}" onclick="Dash.select('${p.id}')">
           <div class="t">${esc(p.short)}</div>
           <div class="s">${esc(p.title)}</div>
@@ -109,30 +105,37 @@
           <div class="chips">
             <span class="chip">${progress(p)}% of stage</span>
             ${oq ? `<span class="chip warn">${oq} open Q</span>` : `<span class="chip ok">no open Q</span>`}
-            ${rv ? `<span class="chip warn">${rv} to review</span>` : ""}
           </div>
         </div>`;
       }).join("");
-      return `<div class="col"><div class="col-head"><div class="n">${s.id}. ${esc(s.name)}</div><div class="o">${esc(s.agentmv.join(" · "))}</div></div>
+      return `<div class="col"><div class="col-head"><div class="n">${s.id}. ${esc(s.name)}</div><div class="o">Exit: ${esc(s.gate.id)}</div></div>
         <div class="col-body">${cards || '<div class="hint" style="padding:6px">—</div>'}</div></div>`;
     }).join("");
   }
 
+  function gateEvent(p, st) {
+    return p.history.filter((e) => e.stage === st.id && e.title.startsWith(`${st.gate.id} passed`)).sort((x, y) => x.date.localeCompare(y.date)).pop();
+  }
+
   function renderMatrix() {
     const st = state.framework.stages;
-    let h = `<tr><th rowspan="2">Project</th><th rowspan="2">Stage</th>${st.map((s) => `<th class="stagegrp" colspan="${s.agentmv.length}">${s.id}. ${esc(s.name)}</th>`).join("")}</tr>`;
-    h += `<tr>${st.map((s) => s.agentmv.map((d) => `<th title="${esc(step(d).agent)} — ${esc(step(d).name)}">${d}</th>`).join("")).join("")}</tr>`;
+    let h = `<tr><th>Project</th>${st.map((s) => `<th class="stagegrp">${s.id}. ${esc(s.name)}<div class="hint">${esc(s.gate.id)}</div></th>`).join("")}<th>Open Q</th></tr>`;
     for (const p of state.projects) {
-      h += `<tr><td class="pname" onclick="Dash.select('${p.id}')">${esc(p.short)}</td><td>${p.currentStage}</td>`;
+      h += `<tr><td class="pname" onclick="Dash.select('${p.id}')">${esc(p.short)}</td>`;
       for (const s of st) {
-        for (const d of s.agentmv) {
-          const a = p.agentmv[`${s.id}:${d}`] || {};
-          const status = a.status || "pending";
-          const tip = `${d} · ${step(d).name} (${step(d).agent})\n${STATUS[status]}${a.note ? "\n" + a.note : ""}`;
-          h += `<td title="${esc(tip)}" style="cursor:pointer" onclick="Dash.select('${p.id}', 'agentmv')"><i class="dot st-${status}"></i></td>`;
+        const q = openQs(p).filter((x) => x.stage === s.id).length;
+        if (s.id < p.currentStage) {
+          const ev = gateEvent(p, s);
+          const override = ev && /override/.test(ev.title);
+          h += `<td class="lc ${override ? "lc-override" : "lc-done"}" title="${esc(ev ? ev.title + (ev.detail ? ": " + ev.detail : "") : "Stage complete")}">${override ? "⚠" : "✓"} ${esc(s.gate.id)}<div class="hint">${esc(ev ? ev.date : "complete")}</div></td>`;
+        } else if (s.id === p.currentStage) {
+          const dots = s.milestones.map((m, i) => `<i class="ms-dot ${(p.milestonesDone || []).includes(i) ? "on" : ""}" title="${esc(m)}"></i>`).join("");
+          h += `<td class="lc lc-current" style="cursor:pointer" onclick="Dash.select('${p.id}')">${dots}<div class="hint">${progress(p)}% · ${q} open Q</div></td>`;
+        } else {
+          h += `<td class="lc">${q ? `<span class="hint">${q} open Q waiting</span>` : '<span class="hint">—</span>'}</td>`;
         }
       }
-      h += "</tr>";
+      h += `<td>${openQs(p).length}</td></tr>`;
     }
     $("matrix").innerHTML = h;
   }
@@ -152,21 +155,8 @@
       return `<label class="ms"><input type="checkbox" ${done ? "checked" : ""} onchange="Dash.toggleMilestone(${i}, this.checked)"> ${esc(m)}</label>`;
     }).join("");
 
-    const agentRows = state.framework.stages.map((s) => {
-      const rows = s.agentmv.map((d) => {
-        const a = p.agentmv[`${s.id}:${d}`] || {};
-        const st = step(d);
-        const opts = Object.entries(STATUS).map(([k, v]) => `<option value="${k}" ${k === (a.status || "pending") ? "selected" : ""}>${v}</option>`).join("");
-        return `<div class="agent-row">
-          <div class="id"><i class="dot st-${a.status || "pending"}"></i> ${d}</div>
-          <div><span class="nm">${esc(st.name)}</span><span class="light ${st.light}" title="${esc(state.framework.governance[st.light])}">${st.light}</span>
-            <div class="ag">${esc(st.agent)} — ${esc(st.does)}</div>
-            ${a.note ? `<div class="nt">${esc(a.note)}</div>` : ""}</div>
-          <div><select onchange="Dash.setStep(${s.id}, '${d}', this.value)">${opts}</select></div>
-        </div>`;
-      }).join("");
-      return `<div style="margin-top:8px;font-size:0.8rem;font-weight:700;color:${s.id === p.currentStage ? "var(--primary)" : "var(--muted)"}">Stage ${s.id} · ${esc(s.name)}${s.id === p.currentStage ? " (current)" : ""}</div>${rows}`;
-    }).join("");
+    const checklist = `<ul class="tight">${(cur.checklist || []).map((c) => `<li>${esc(c)}</li>`).join("")}</ul>`;
+    const gateItems = `<ul class="tight">${cur.gate.items.map((g) => `<li>${esc(g)}</li>`).join("")}</ul>`;
 
     const qs = p.openQuestions.filter((q) => qFilter === "all" || (qFilter === "open" ? q.status !== "resolved" : q.status === "resolved"));
     const qHtml = qs.map((q) => `<div class="q ${q.status === "resolved" ? "resolved" : ""}">
@@ -222,9 +212,11 @@
             <button class="small" onclick="Dash.addQuestion()">Add</button>
           </div>
 
-          <h3 id="agentmv-section">AgentM&V decisions</h3>
-          <div class="hint">Status per decision node. Yellow/red decisions need human sign-off under the Layer 4 governance policy.</div>
-          ${agentRows}
+          <h3 id="cookbook-section">Cookbook checklist — Stage ${cur.id}</h3>
+          <div class="hint">Sections of the <a href="index.html">Full Lifecycle Checklist</a> that apply to this stage.</div>
+          ${checklist}
+          <div class="hint" style="margin-top:8px"><b>${esc(cur.gate.id)} exit criteria</b> (<a href="quick-gate.html">Stage-Gate Cheat Sheet</a>):</div>
+          ${gateItems}
         </div>
 
         <div>
@@ -273,13 +265,13 @@
   const Dash = {
     get state() { return state; },
     get selectedId() { return selectedId; },
-    project, stage, step, stepStatus, esc,
+    project, stage, esc,
 
     select(id, anchor) {
       selectedId = id;
       renderPipeline();
       renderDetail();
-      const target = $(anchor === "agentmv" ? "agentmv-section" : "detail");
+      const target = $(anchor === "cookbook" ? "cookbook-section" : "detail");
       if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
       if (window.Chat) window.Chat.setScope(id);
     },
@@ -291,15 +283,6 @@
       p.milestonesDone = [...set].sort((a, b) => a - b);
       const m = stage(p.currentStage).milestones[i];
       logEvent(p, { title: `${on ? "Milestone completed" : "Milestone reopened"}: ${m}`, detail: "" });
-      save();
-    },
-
-    setStep(stageId, d, status) {
-      const p = cur();
-      const key = `${stageId}:${d}`;
-      const prev = (p.agentmv[key] || {}).status || "pending";
-      p.agentmv[key] = Object.assign({}, p.agentmv[key], { status });
-      logEvent(p, { stage: stageId, title: `AgentM&V ${d} (${step(d).name}): ${STATUS[prev]} → ${STATUS[status]}`, detail: step(d).agent });
       save();
     },
 
@@ -342,7 +325,7 @@
       const p = cur();
       const s = stage(p.currentStage);
       $("gate-title").textContent = `${p.short}: ${s.gate.id} → Stage ${s.id + 1}`;
-      $("gate-sub").textContent = `${s.gate.title}. Confirm each exit criterion. Advancing with unchecked items is logged as a gate override (a red, signed decision in AgentM&V terms).`;
+      $("gate-sub").textContent = `${s.gate.title}. Confirm each exit criterion. Advancing with unchecked items is logged as a gate override and needs a justification.`;
       $("gate-items").innerHTML = s.gate.items.map((it, i) => `<label class="ck"><input type="checkbox" class="gate-ck" data-i="${i}" onchange="Dash.gateCheck()"> ${esc(it)}</label>`).join("");
       $("gate-date").value = today();
       $("gate-note").value = "";
@@ -369,18 +352,9 @@
         title: unchecked.length ? `${s.gate.id} passed with override` : `${s.gate.id} passed`,
         detail: (note ? note + " " : "") + (unchecked.length ? `Unchecked: ${unchecked.join("; ")}.` : "All exit criteria confirmed.")
       });
-      // Close out the stage's decisions that were awaiting review, then open the next stage.
-      for (const d of s.agentmv) {
-        const k = `${s.id}:${d}`;
-        if (!p.agentmv[k] || p.agentmv[k].status !== "done") p.agentmv[k] = Object.assign({}, p.agentmv[k], { status: unchecked.length ? "blocked" : "done" });
-      }
       p.currentStage += 1;
       p.milestonesDone = [];
       const ns = stage(p.currentStage);
-      for (const d of ns.agentmv) {
-        const k = `${ns.id}:${d}`;
-        if (!p.agentmv[k] || p.agentmv[k].status === "pending") p.agentmv[k] = Object.assign({}, p.agentmv[k], { status: "active" });
-      }
       logEvent(p, { date, stage: ns.id, title: `Entered Stage ${ns.id}: ${ns.name}`, detail: ns.objective });
       Dash.closeModal("gate-modal");
       save();
@@ -438,7 +412,7 @@
         projects: state.projects.map((p) => ({
           id: p.id, name: p.name, currentStage: `${p.currentStage}. ${stage(p.currentStage).name}`,
           stageMilestones: stage(p.currentStage).milestones.map((m, i) => `${(p.milestonesDone || []).includes(i) ? "[x]" : "[ ]"} ${m}`),
-          agentmv: Object.fromEntries(Object.entries(p.agentmv).map(([k, v]) => [k, v.status + (v.note ? ` — ${v.note}` : "")])),
+          stageChecklist: stage(p.currentStage).checklist, exitGate: `${stage(p.currentStage).gate.id}: ${stage(p.currentStage).gate.items.join("; ")}`,
           openQuestions: p.openQuestions.map((q) => `${q.status === "resolved" ? "RESOLVED" : "OPEN"} [stage ${q.stage}] ${q.text}${q.answer ? " → " + q.answer : ""} (${q.source})`),
           history: p.history.map((e) => `${e.date} [stage ${e.stage}] ${e.title}${e.detail ? ": " + e.detail : ""} (${e.source})`),
           nextSteps: p.nextSteps, timeline: p.timeline, ipmvp: p.ipmvp, mvType: p.mvType

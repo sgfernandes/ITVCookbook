@@ -135,7 +135,7 @@ def slide_one(prs):
     s = prs.slides.add_slide(prs.slide_layouts[6])
     header(s, "Agentic Program Management",
            "From scattered files to one live view of every project",
-           "Every ITV project, stage, open question and decision in one place, tracked against the M&V framework")
+           "Every ITV project, stage, open question and decision in one place, tracked against the M&V Cookbook")
 
     # Left: challenge
     card(s, 0.5, 1.65, 3.85, 4.6, "The challenge today", RED, RED_LIGHT)
@@ -157,7 +157,7 @@ def slide_one(prs):
         ("Status is implied, not tracked:", "where a project stands is pieced together from the latest deck or meeting."),
         ("Open questions get lost:", "42 site/vendor questions sit in slide notes with no stage, owner or resolution trail."),
         ("Stakeholders see different versions:", "DOE, tech leads, host sites and vendors each work from their own copy."),
-        ("The method and the progress live apart:", "Cookbook gates and AgentM&V decisions aren't linked to project status."),
+        ("The method and the progress live apart:", "Cookbook stages and gate criteria aren't linked to project status."),
     ], size=11, marker="✕", marker_color=RED, space=4)
 
     # Arrow
@@ -169,7 +169,7 @@ def slide_one(prs):
         ("One shared portfolio record:", "5 projects and 23 source documents combined into one versioned file."),
         ("Stage pipeline:", "every project placed in a Cookbook stage, from Planning to Reporting, with milestone progress."),
         ("Gate-controlled progress:", "projects advance only through exit-gate checklists (Gates 1–5); overrides need a written reason."),
-        ("Framework map:", "each stage linked to AgentM&V decisions (INGEST, D1–D8) with green/yellow/red sign-off status."),
+        ("Cookbook lifecycle map:", "each project's progress through Cookbook milestones, checklists and gates, with pass dates and overrides."),
         ("Audit trail:", "every resolved question, milestone and stage change is dated in the project history."),
     ], size=12, marker="✓", marker_color=GREEN, space=6)
 
@@ -177,7 +177,7 @@ def slide_one(prs):
     pic = s.shapes.add_picture(str(SHOT), Inches(8.95), Inches(1.65), width=Inches(3.88))
     pic.line.color.rgb = BORDER
     pic.line.width = Pt(0.75)
-    text(s, 8.95, 1.65 + pic.height / 914400 + 0.03, 3.88, 0.25, "Live dashboard: summary, stage pipeline, framework map",
+    text(s, 8.95, 1.65 + pic.height / 914400 + 0.03, 3.88, 0.25, "Live dashboard: summary, stage pipeline, Cookbook lifecycle map",
          size=9, color=MUTED, italic=True, align=PP_ALIGN.CENTER)
     stats = [("5", "projects"), ("23", "source docs"), ("42", "tracked questions"), ("5", "stage gates")]
     for i, (v, l) in enumerate(stats):
@@ -188,11 +188,11 @@ def slide_one(prs):
     text(s, 8.95, 5.68, 3.88, 0.55, "Status as of Nov 2026: all five Team A projects in Planning; M&V plans and Gate 1 are next.",
          size=10, color=NAVY, align=PP_ALIGN.CENTER)
 
-    banner(s, "Status is no longer pieced together from files. It is tracked against the framework.")
+    banner(s, "Status is no longer pieced together from files. It is tracked against the Cookbook.")
     notes(s, """
 Before this, answering "where is Element 16?" meant opening the application, the July 29 Team A review deck, the September 29 DOE assessment and the project profile spreadsheet, then working out which one was most current.
 
-The dashboard pulls all of that into one shared record that follows the Cookbook's five stages and the AgentM&V decision framework.
+The dashboard pulls all of that into one shared record that follows the Cookbook's five stages, their checklists and stage gates. Mapping to the AgentM&V decision framework is planned as a next phase.
 
 When a project moves, it moves through a gate: the exit checklist from our stage-gate cheat sheet. If someone advances a project without every gate item checked, they must write a reason. That override is logged and the stage's decisions are flagged red, so nothing moves silently.
 
@@ -222,7 +222,7 @@ def slide_two(prs):
     text(s, 3.27, 1.88, 0.4, 0.5, "+", size=28, color=PRIMARY, bold=True, align=PP_ALIGN.CENTER)
     flow_box(3.7, 2.75, "Live dashboard state", "Stages · gates · open questions · stage history", PRIMARY_LIGHT, PRIMARY, TEXT)
     shape(s, MSO_SHAPE.RIGHT_ARROW, 6.55, 1.93, 0.45, 0.5, fill=PRIMARY)
-    flow_box(7.1, 2.55, "AI assistant (Claude)", "Reads everything, reasons over the M&V framework", NAVY, WHITE, RGBColor(0xC9, 0xD6, 0xE6))
+    flow_box(7.1, 2.55, "AI assistant (Claude)", "Reads everything, reasons over the M&V Cookbook", NAVY, WHITE, RGBColor(0xC9, 0xD6, 0xE6))
     shape(s, MSO_SHAPE.RIGHT_ARROW, 9.75, 1.93, 0.45, 0.5, fill=PRIMARY)
     flow_box(10.3, 2.53, "Answers with sources", "Every claim cited to a document and date", GREEN_LIGHT, GREEN, TEXT)
 
@@ -263,7 +263,7 @@ def slide_two(prs):
     bullets(s, 8.52, 3.45, 4.2, 2.75, [
         ("Grounded:", "answers cite their sources; if the documents don't say, the assistant says so rather than guessing."),
         ("Always current:", "it reads the live dashboard, so answers reflect the latest stage changes."),
-        ("Built around the framework:", "answers use Cookbook stages, gates and AgentM&V decisions."),
+        ("Built around the Cookbook:", "answers use Cookbook stages, checklists and gates."),
         ("Claims kept separate from results:", "vendor claims are never presented as verified savings."),
         ("Low barrier to use:", "runs in a web browser; without an API key it still works as a document search."),
     ], size=11.5, marker="✓", marker_color=GREEN, space=4)

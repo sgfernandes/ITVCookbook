@@ -7,31 +7,31 @@ Rebuild with `python3 tools/build_slides.py`. Live dashboard: https://sgfernande
 
 ## Slide 1: From scattered files to one live view of every project
 
-*Every ITV project, stage, open question and decision in one place, tracked against the M&V framework*
+*Every ITV project, stage, open question and decision in one place, tracked against the M&V Cookbook*
 
 **The challenge today**
 - **Files spread across folders and formats:** applications (PDF), review decks and DOE assessments (PPTX), profile workbooks (XLSX/CSV) and notes (MD).
 - **Status is implied, not tracked:** where a project stands is pieced together from the latest deck or meeting.
 - **Open questions get lost:** 42 site/vendor questions sit in slide notes with no stage, owner or resolution trail.
 - **Stakeholders see different versions:** DOE, tech leads, host sites and vendors each work from their own copy.
-- **The method and the progress live apart:** Cookbook gates and AgentM&V decisions aren't linked to project status.
+- **The method and the progress live apart:** Cookbook stages and gate criteria aren't linked to project status.
 
 **What the dashboard does**
 - **One shared portfolio record:** 5 projects and 23 source documents combined into one versioned file.
 - **Stage pipeline:** every project placed in a Cookbook stage, from Planning to Reporting, with milestone progress.
 - **Gate-controlled progress:** projects advance only through exit-gate checklists (Gates 1–5); overrides need a written reason.
-- **Framework map:** each stage linked to AgentM&V decisions (INGEST, D1–D8) with green/yellow/red sign-off status.
+- **Cookbook lifecycle map:** each project's progress through Cookbook milestones, checklists and gates, with pass dates and overrides.
 - **Audit trail:** every resolved question, milestone and stage change is dated in the project history.
 
-**Visual:** dashboard screenshot (summary tiles, stage pipeline, framework map) and stat tiles: 5 projects · 23 source docs · 42 tracked questions · 5 stage gates.
+**Visual:** dashboard screenshot (summary tiles, stage pipeline, Cookbook lifecycle map) and stat tiles: 5 projects · 23 source docs · 42 tracked questions · 5 stage gates.
 *Status as of Nov 2026: all five Team A projects in Planning; M&V plans and Gate 1 are next.*
 
-**Banner:** *Status is no longer pieced together from files. It is tracked against the framework.*
+**Banner:** *Status is no longer pieced together from files. It is tracked against the Cookbook.*
 
 ### Speaker notes
 Before this, answering "where is Element 16?" meant opening the application, the July 29 Team A review deck, the September 29 DOE assessment and the project profile spreadsheet, then working out which one was most current.
 
-The dashboard pulls all of that into one shared record that follows the Cookbook's five stages and the AgentM&V decision framework.
+The dashboard pulls all of that into one shared record that follows the Cookbook's five stages, their checklists and stage gates. Mapping to the AgentM&V decision framework is planned as a next phase.
 
 When a project moves, it moves through a gate: the exit checklist from our stage-gate cheat sheet. If someone advances a project without every gate item checked, they must write a reason. That override is logged and the stage's decisions are flagged red, so nothing moves silently.
 
@@ -47,7 +47,7 @@ Today all five Team A projects are in Planning: the DOE initial assessment is do
 
 *An AI assistant that has read every project document and sees each project's live status*
 
-**Flow:** Project documents (applications · technology reviews · DOE assessments · profiles) **+** Live dashboard state (stages · gates · open questions · stage history) **→** AI assistant (Claude) **→** Answers with sources
+**Flow:** Project documents (applications · technology reviews · DOE assessments · profiles) **+** Live dashboard state (stages · gates · open questions · stage history) **→** AI assistant (Claude, reasons over the M&V Cookbook) **→** Answers with sources
 
 | Stakeholder | Asks in plain language… |
 |---|---|
@@ -60,7 +60,7 @@ Today all five Team A projects are in Planning: the DOE initial assessment is do
 **Why it's different**
 - **Grounded:** answers cite their sources; if the documents don't say, the assistant says so rather than guessing.
 - **Always current:** it reads the live dashboard, so answers reflect the latest stage changes.
-- **Built around the framework:** answers use Cookbook stages, gates and AgentM&V decisions.
+- **Built around the Cookbook:** answers use Cookbook stages, checklists and gates.
 - **Claims kept separate from results:** vendor claims are never presented as verified savings.
 - **Low barrier to use:** runs in a web browser; without an API key it still works as a document search.
 

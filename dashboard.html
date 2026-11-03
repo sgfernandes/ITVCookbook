@@ -93,12 +93,6 @@
         table.matrix th { background: #f8fafc; color: #444; font-weight: 600; }
         table.matrix th.stagegrp { background: var(--primary-light); color: var(--primary); }
         table.matrix td.pname { text-align: left; font-weight: 600; white-space: nowrap; cursor: pointer; color: var(--primary); }
-        .dot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; vertical-align: middle; }
-        .st-done { background: var(--green); }
-        .st-review { background: var(--yellow); }
-        .st-blocked { background: var(--red); }
-        .st-active { background: var(--blue); }
-        .st-pending { background: #fff; border: 2px solid var(--grey); }
         .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 0.8rem; color: var(--muted); margin-top: 8px; }
         .legend span { display: inline-flex; gap: 6px; align-items: center; }
 
@@ -136,16 +130,15 @@
         .tl-item.local::before { background: var(--yellow); }
         .tl-item .d { font-size: 0.75rem; color: var(--muted); }
         .tl-item .tt { font-weight: 600; }
-        .agent-row { display: grid; grid-template-columns: 70px 1fr 120px; gap: 8px; align-items: start; padding: 6px 0; border-bottom: 1px solid #f0f2f5; font-size: 0.85rem; }
-        .agent-row .id { font-weight: 700; color: var(--primary); }
-        .agent-row .nm { font-weight: 600; }
-        .agent-row .ag { font-size: 0.75rem; color: var(--muted); }
-        .agent-row .nt { font-size: 0.8rem; color: #555; margin-top: 2px; }
-        .agent-row select { font-size: 0.8rem; padding: 4px; }
-        .light { font-size: 0.7rem; font-weight: 700; padding: 1px 6px; border-radius: 8px; margin-left: 6px; }
-        .light.green { background: #e3f5ea; color: #1b6e3c; }
-        .light.yellow { background: #fff4d6; color: #8a6400; }
-        .light.red { background: #fde8e8; color: #a12b2b; }
+        td.lc { min-width: 120px; }
+        .lc-done { background: #e3f5ea; color: #1b6e3c; font-weight: 600; }
+        .lc-override { background: #fff4d6; color: #8a6400; font-weight: 600; }
+        .lc-current { background: var(--primary-light); }
+        .ms-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin: 0 2px; border: 2px solid var(--success); background: #fff; vertical-align: middle; }
+        .ms-dot.on { background: var(--success); }
+        .lc-swatch { display: inline-flex; align-items: center; justify-content: center; min-width: 34px; height: 20px; padding: 0 4px; border-radius: 4px; border: 1px solid var(--border); font-size: 0.75rem; }
+        .roadmap { margin-top: 12px; font-size: 0.85rem; color: var(--muted); background: #f8fafc; border: 1px dashed var(--border); border-radius: 6px; padding: 8px 12px; }
+        .detail a, .hint a { color: var(--primary); }
         .row-form { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
         .row-form > * { flex: 1 1 140px; }
         .row-form button { flex: 0 0 auto; }
@@ -214,7 +207,7 @@
     <header>
         <div>
             <h1>ITV Project Portfolio Dashboard</h1>
-            <div class="subtitle" id="subtitle">Cookbook lifecycle stages × AgentM&V decision framework</div>
+            <div class="subtitle" id="subtitle">ITV M&V Cookbook lifecycle: stages, milestones and stage gates</div>
         </div>
         <div class="controls">
             <button class="secondary" onclick="Dash.exportJS()" title="Download the current state as data/portfolio.js to commit to the repo">⬇ Download portfolio.js</button>
@@ -232,16 +225,16 @@
     <h2>Stage pipeline</h2>
     <div class="pipeline" id="pipeline"></div>
 
-    <h2>AgentM&V framework map</h2>
-    <div class="subtitle" style="margin:-6px 0 10px">Each cookbook stage maps to decisions in the AgentM&V DAG (agents A1–A7, Layer 4 traffic-light governance). Click a project name to open it.</div>
+    <h2>Cookbook lifecycle map</h2>
+    <div class="subtitle" style="margin:-6px 0 10px">Progress of each project through the five Cookbook stages and their exit gates. Click a project to open it.</div>
     <div class="matrix-wrap"><table class="matrix" id="matrix"></table></div>
     <div class="legend">
-        <span><i class="dot st-done"></i>Done (committed)</span>
-        <span><i class="dot st-review"></i>Awaiting human review (yellow)</span>
-        <span><i class="dot st-blocked"></i>Blocked / signed decision needed (red)</span>
-        <span><i class="dot st-active"></i>In progress</span>
-        <span><i class="dot st-pending"></i>Not started</span>
+        <span><span class="lc-swatch lc-done">✓</span>Gate passed (date)</span>
+        <span><span class="lc-swatch lc-override">⚠</span>Gate passed with override</span>
+        <span><span class="lc-swatch lc-current"><i class="ms-dot on"></i><i class="ms-dot"></i></span>Current stage: milestones done / to do</span>
+        <span><span class="lc-swatch">—</span>Upcoming stage (open questions already tagged to it)</span>
     </div>
+    <div class="roadmap">🧭 <b>Planned:</b> map each stage to the AgentM&V decision framework (agents, decision nodes and governance lights) in a future release.</div>
 
     <div id="detail"></div>
 </div>
