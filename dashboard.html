@@ -159,6 +159,9 @@
         .amv-step { display: flex; gap: 10px; align-items: flex-start; font-size: 0.86rem; padding: 7px 0; transition: opacity 0.4s, transform 0.4s; }
         .amv-flow.playing .amv-step { opacity: 0.15; transform: translateX(6px); }
         .amv-flow.playing .amv-step.shown { opacity: 1; transform: none; }
+        .amv-fig { margin: 16px 0 6px; text-align: center; }
+        .amv-fig img { width: 100%; max-width: 1100px; height: auto; border: 1px solid var(--border); border-radius: 6px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+        .amv-fig figcaption { font-size: 0.8rem; color: var(--muted); margin-top: 6px; }
         .amv-actions { display: flex; gap: 6px; align-items: center; margin-top: 5px; }
         @media (max-width: 1000px) { .amv-stages { grid-template-columns: 1fr; } }
         .row-form { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
@@ -269,6 +272,13 @@
             </div>
             <button class="secondary" id="amv-play" onclick="AMV.play()">▶ Play example</button>
         </div>
+
+        <figure class="amv-fig">
+            <a href="assets/before-after-mv.jpg" target="_blank" rel="noopener" title="Open full size">
+                <img src="assets/before-after-mv.jpg" alt="Evolution of the M&V process: the existing manual workflow (100% engineer effort: data gathering, scenario characterization, model fitting, calculations, ad-hoc review) compared with the AgentM&V neuro-symbolic workflow (AI agents for ingestion and scenario reasoning, deterministic checks for data, protocol rules and calculations, and a human-in-the-loop override and approval step)." loading="lazy">
+            </a>
+            <figcaption>From manual M&V to AgentM&V: AI handles language and reasoning tasks, deterministic code enforces the math and protocol rules, and the engineer keeps final authority. Click to enlarge.</figcaption>
+        </figure>
 
         <h3>How the Cookbook stages will map to AgentM&V decisions</h3>
         <div class="amv-stages">
