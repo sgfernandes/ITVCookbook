@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Portfolio Dashboard | ITV M&V</title>
+    <style>
+        :root {
+            --primary: #005a9c;
+            --primary-light: #e6f0f8;
+            --success: #28a745;
+            --bg: #f4f6f9;
+            --text: #333;
+            --muted: #667085;
+            --border: #dce1e7;
+            --green: #1f9d55;
+            --yellow: #d69e00;
+            --red: #d64545;
+            --blue: #2f80ed;
+            --grey: #b8c2cc;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.5;
+            color: var(--text);
+            background-color: var(--bg);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+        }
+        .nav-bar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
+        .nav-link { text-decoration: none; padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; font-weight: 600; color: var(--primary); background: var(--primary-light); transition: all 0.2s; }
+        .nav-link:hover { background: #cfe2f3; }
+        .nav-link.active { background: var(--primary); color: #fff; }
+        header { border-bottom: 2px solid var(--primary); padding-bottom: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px; }
+        h1 { margin: 0; color: var(--primary); font-size: 1.8rem; line-height: 1.2; }
+        h2 { color: var(--primary); font-size: 1.2rem; margin: 30px 0 12px; }
+        h3 { font-size: 1rem; color: #444; margin: 18px 0 8px; border-bottom: 1px solid #eee; padding-bottom: 4px; }
+        .subtitle { color: #666; font-size: 0.95rem; margin-top: 6px; }
+        .controls { display: flex; gap: 8px; flex-wrap: wrap; }
+        button { background: var(--primary); color: #fff; border: none; padding: 8px 14px; border-radius: 4px; cursor: pointer; font-size: 0.88rem; font-weight: 500; transition: background 0.2s; }
+        button:hover { background: #004477; }
+        button.secondary { background: var(--primary-light); color: var(--primary); }
+        button.secondary:hover { background: #cfe2f3; }
+        button.danger { background: #dc3545; }
+        button.danger:hover { background: #b02a37; }
+        button.small { padding: 4px 9px; font-size: 0.8rem; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        input[type=text], input[type=password], input[type=date], select, textarea {
+            font: inherit; font-size: 0.9rem; padding: 7px 9px; border: 1px solid var(--border); border-radius: 4px; background: #fff; width: 100%;
+        }
+        .banner { background: #fff8e1; border: 1px solid #f3d27a; color: #7a5a00; padding: 10px 14px; border-radius: 6px; margin-bottom: 16px; font-size: 0.9rem; display: none; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .banner.show { display: flex; }
+
+        /* Tiles */
+        .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+        .tile { background: var(--primary-light); border-radius: 6px; padding: 14px 16px; }
+        .tile .v { font-size: 1.8rem; font-weight: 700; color: var(--primary); line-height: 1.1; }
+        .tile .l { font-size: 0.82rem; color: var(--muted); margin-top: 4px; }
+
+        /* Pipeline */
+        .pipeline { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+        .col { background: #f8fafc; border: 1px solid var(--border); border-radius: 6px; min-height: 160px; display: flex; flex-direction: column; }
+        .col-head { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+        .col-head .n { font-weight: 700; color: var(--primary); font-size: 0.95rem; }
+        .col-head .o { font-size: 0.75rem; color: var(--muted); }
+        .col-body { padding: 8px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+        .card { background: #fff; border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 5px; padding: 9px 10px; cursor: pointer; transition: box-shadow 0.15s; }
+        .card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .card.selected { outline: 2px solid var(--primary); }
+        .card .t { font-weight: 600; font-size: 0.88rem; }
+        .card .s { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+        .bar { background: #e2e8f0; height: 6px; border-radius: 3px; overflow: hidden; margin-top: 7px; }
+        .bar > div { background: var(--success); height: 100%; }
+        .chips { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
+        .chip { font-size: 0.7rem; padding: 2px 7px; border-radius: 10px; background: var(--primary-light); color: var(--primary); font-weight: 600; white-space: nowrap; }
+        .chip.warn { background: #fff4d6; color: #8a6400; }
+        .chip.bad { background: #fde8e8; color: #a12b2b; }
+        .chip.ok { background: #e3f5ea; color: #1b6e3c; }
+
+        /* Matrix */
+        .matrix-wrap { overflow-x: auto; }
+        table.matrix { border-collapse: collapse; width: 100%; font-size: 0.83rem; }
+        table.matrix th, table.matrix td { border: 1px solid var(--border); padding: 6px 8px; text-align: center; }
+        table.matrix th { background: #f8fafc; color: #444; font-weight: 600; }
+        table.matrix th.stagegrp { background: var(--primary-light); color: var(--primary); }
+        table.matrix td.pname { text-align: left; font-weight: 600; white-space: nowrap; cursor: pointer; color: var(--primary); }
+        .dot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; vertical-align: middle; }
+        .st-done { background: var(--green); }
+        .st-review { background: var(--yellow); }
+        .st-blocked { background: var(--red); }
+        .st-active { background: var(--blue); }
+        .st-pending { background: #fff; border: 2px solid var(--grey); }
+        .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 0.8rem; color: var(--muted); margin-top: 8px; }
+        .legend span { display: inline-flex; gap: 6px; align-items: center; }
+
+        /* Detail */
+        .detail { border: 1px solid var(--border); border-radius: 6px; padding: 20px; margin-top: 10px; }
+        .detail-head { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: flex-start; }
+        .detail-head h2 { margin: 0; }
+        .stepper { display: flex; margin: 18px 0 6px; }
+        .step { flex: 1; text-align: center; position: relative; font-size: 0.78rem; color: var(--muted); }
+        .step .c { width: 28px; height: 28px; border-radius: 50%; margin: 0 auto 4px; display: flex; align-items: center; justify-content: center; font-weight: 700; background: #e2e8f0; color: #666; position: relative; z-index: 1; }
+        .step::before { content: ""; position: absolute; top: 14px; left: -50%; width: 100%; height: 3px; background: #e2e8f0; }
+        .step:first-child::before { display: none; }
+        .step.done .c { background: var(--success); color: #fff; }
+        .step.done::before, .step.current::before { background: var(--success); }
+        .step.current .c { background: var(--primary); color: #fff; box-shadow: 0 0 0 4px var(--primary-light); }
+        .step.current { color: var(--primary); font-weight: 700; }
+        .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        .kv { font-size: 0.88rem; }
+        .kv div { margin-bottom: 5px; }
+        .kv b { color: #444; }
+        ul.tight { margin: 4px 0; padding-left: 18px; font-size: 0.88rem; }
+        ul.tight li { margin-bottom: 3px; }
+        .ms { display: flex; gap: 8px; align-items: center; font-size: 0.88rem; padding: 3px 0; }
+        .q { display: flex; gap: 10px; align-items: flex-start; padding: 7px 6px; border-bottom: 1px solid #f0f2f5; font-size: 0.88rem; }
+        .q:hover { background: #f8fafc; }
+        .q .body { flex: 1; }
+        .q .meta { font-size: 0.74rem; color: var(--muted); }
+        .q.resolved .txt { text-decoration: line-through; color: #888; }
+        .q .ans { font-size: 0.82rem; color: #1b6e3c; margin-top: 2px; }
+        .filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+        .filters button.on { background: var(--primary); color: #fff; }
+        .tl { border-left: 3px solid var(--primary-light); margin-left: 6px; padding-left: 16px; }
+        .tl-item { position: relative; margin-bottom: 14px; font-size: 0.88rem; }
+        .tl-item::before { content: ""; position: absolute; left: -23px; top: 4px; width: 11px; height: 11px; border-radius: 50%; background: var(--primary); }
+        .tl-item.local::before { background: var(--yellow); }
+        .tl-item .d { font-size: 0.75rem; color: var(--muted); }
+        .tl-item .tt { font-weight: 600; }
+        .agent-row { display: grid; grid-template-columns: 70px 1fr 120px; gap: 8px; align-items: start; padding: 6px 0; border-bottom: 1px solid #f0f2f5; font-size: 0.85rem; }
+        .agent-row .id { font-weight: 700; color: var(--primary); }
+        .agent-row .nm { font-weight: 600; }
+        .agent-row .ag { font-size: 0.75rem; color: var(--muted); }
+        .agent-row .nt { font-size: 0.8rem; color: #555; margin-top: 2px; }
+        .agent-row select { font-size: 0.8rem; padding: 4px; }
+        .light { font-size: 0.7rem; font-weight: 700; padding: 1px 6px; border-radius: 8px; margin-left: 6px; }
+        .light.green { background: #e3f5ea; color: #1b6e3c; }
+        .light.yellow { background: #fff4d6; color: #8a6400; }
+        .light.red { background: #fde8e8; color: #a12b2b; }
+        .row-form { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+        .row-form > * { flex: 1 1 140px; }
+        .row-form button { flex: 0 0 auto; }
+
+        /* Modal */
+        .modal-bg { position: fixed; inset: 0; background: rgba(15,23,42,0.45); display: none; align-items: center; justify-content: center; z-index: 50; padding: 20px; }
+        .modal-bg.show { display: flex; }
+        .modal { background: #fff; border-radius: 8px; max-width: 560px; width: 100%; padding: 22px; max-height: 90vh; overflow: auto; }
+        .modal h3 { margin-top: 0; color: var(--primary); border: none; font-size: 1.15rem; }
+        .modal label.ck { display: flex; gap: 10px; align-items: flex-start; font-size: 0.9rem; padding: 5px 0; cursor: pointer; }
+        .modal .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+        .modal .field { margin: 10px 0; font-size: 0.88rem; }
+        .modal .field label { display: block; font-weight: 600; margin-bottom: 4px; }
+        .hint { font-size: 0.78rem; color: var(--muted); }
+
+        /* Chat drawer */
+        .chat-fab { position: fixed; right: 24px; bottom: 24px; z-index: 40; border-radius: 28px; padding: 13px 20px; font-size: 0.95rem; box-shadow: 0 4px 14px rgba(0,90,156,0.35); }
+        .chat { position: fixed; top: 0; right: 0; bottom: 0; width: min(480px, 100vw); background: #fff; box-shadow: -4px 0 20px rgba(0,0,0,0.12); z-index: 45; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.25s; }
+        .chat.open { transform: none; }
+        .chat-head { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; gap: 8px; align-items: center; }
+        .chat-head .ttl { font-weight: 700; color: var(--primary); flex: 1; }
+        .chat-sub { padding: 8px 16px; border-bottom: 1px solid var(--border); display: flex; gap: 8px; align-items: center; font-size: 0.8rem; color: var(--muted); }
+        .chat-sub select { width: auto; flex: 1; font-size: 0.82rem; padding: 4px 6px; }
+        .chat-log { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; background: #fafbfc; }
+        .msg { max-width: 92%; padding: 9px 12px; border-radius: 10px; font-size: 0.88rem; line-height: 1.5; word-wrap: break-word; }
+        .msg.user { align-self: flex-end; background: var(--primary); color: #fff; border-bottom-right-radius: 3px; white-space: pre-wrap; }
+        .msg.bot { align-self: flex-start; background: #fff; border: 1px solid var(--border); border-bottom-left-radius: 3px; }
+        .msg.bot p { margin: 0 0 8px; } .msg.bot p:last-child { margin-bottom: 0; }
+        .msg.bot ul, .msg.bot ol { margin: 4px 0 8px; padding-left: 20px; }
+        .msg.bot h4 { margin: 8px 0 4px; font-size: 0.9rem; color: var(--primary); }
+        .msg.bot code { background: #f1f5f9; padding: 1px 4px; border-radius: 3px; font-size: 0.82rem; }
+        .msg.bot table { border-collapse: collapse; font-size: 0.8rem; margin: 6px 0; }
+        .msg.bot td, .msg.bot th { border: 1px solid var(--border); padding: 3px 6px; }
+        .msg.sys { align-self: center; font-size: 0.78rem; color: var(--muted); text-align: center; }
+        .msg .src { font-size: 0.74rem; color: var(--muted); margin-top: 6px; border-top: 1px dashed var(--border); padding-top: 4px; }
+        .excerpt { background: #f8fafc; border-left: 3px solid var(--primary); padding: 6px 8px; margin: 6px 0; font-size: 0.8rem; white-space: pre-wrap; }
+        .suggest { display: flex; gap: 6px; flex-wrap: wrap; padding: 0 16px 8px; background: #fafbfc; }
+        .suggest button { background: #fff; color: var(--primary); border: 1px solid var(--border); font-size: 0.76rem; padding: 5px 9px; border-radius: 14px; }
+        .suggest button:hover { background: var(--primary-light); }
+        .chat-input { border-top: 1px solid var(--border); padding: 10px 12px; display: flex; gap: 8px; }
+        .chat-input textarea { resize: none; height: 44px; }
+        .typing::after { content: "▍"; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        @media (max-width: 1000px) {
+            .pipeline { grid-template-columns: 1fr; }
+            .grid2 { grid-template-columns: 1fr; }
+        }
+        @media print {
+            body { background: #fff; padding: 0; }
+            .container { box-shadow: none; max-width: 100%; padding: 0; }
+            .controls, .nav-bar, .chat, .chat-fab, .row-form, .banner { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <nav class="nav-bar">
+        <a href="index.html" class="nav-link">📋 Full Lifecycle Checklist</a>
+        <a href="quick-gate.html" class="nav-link">⚡ 1-Page Stage-Gate Cheat Sheet</a>
+        <a href="baseline-uncertainty.html" class="nav-link">📈 Baseline & Uncertainty Simulator</a>
+        <a href="dashboard.html" class="nav-link active">📊 Portfolio Dashboard</a>
+    </nav>
+
+    <header>
+        <div>
+            <h1>ITV Project Portfolio Dashboard</h1>
+            <div class="subtitle" id="subtitle">Cookbook lifecycle stages × AgentM&V decision framework</div>
+        </div>
+        <div class="controls">
+            <button class="secondary" onclick="Dash.exportJS()" title="Download the current state as data/portfolio.js to commit to the repo">⬇ Download portfolio.js</button>
+            <button class="secondary" onclick="Dash.exportJSON()">⬇ Export JSON</button>
+            <button class="secondary" onclick="document.getElementById('import-file').click()">⬆ Import JSON</button>
+            <input type="file" id="import-file" accept=".json,application/json" hidden onchange="Dash.importJSON(this)">
+            <button class="danger" onclick="Dash.resetLocal()">Reset local changes</button>
+        </div>
+    </header>
+
+    <div class="banner" id="banner"></div>
+
+    <div class="tiles" id="tiles"></div>
+
+    <h2>Stage pipeline</h2>
+    <div class="pipeline" id="pipeline"></div>
+
+    <h2>AgentM&V framework map</h2>
+    <div class="subtitle" style="margin:-6px 0 10px">Each cookbook stage maps to decisions in the AgentM&V DAG (agents A1–A7, Layer 4 traffic-light governance). Click a project name to open it.</div>
+    <div class="matrix-wrap"><table class="matrix" id="matrix"></table></div>
+    <div class="legend">
+        <span><i class="dot st-done"></i>Done (committed)</span>
+        <span><i class="dot st-review"></i>Awaiting human review (yellow)</span>
+        <span><i class="dot st-blocked"></i>Blocked / signed decision needed (red)</span>
+        <span><i class="dot st-active"></i>In progress</span>
+        <span><i class="dot st-pending"></i>Not started</span>
+    </div>
+
+    <div id="detail"></div>
+</div>
+
+<!-- Stage gate modal -->
+<div class="modal-bg" id="gate-modal">
+    <div class="modal">
+        <h3 id="gate-title"></h3>
+        <div class="hint" id="gate-sub"></div>
+        <div id="gate-items" style="margin-top:10px"></div>
+        <div class="field"><label for="gate-date">Date</label><input type="date" id="gate-date"></div>
+        <div class="field"><label for="gate-note">What happened? (logged to the stage history)</label><textarea id="gate-note" rows="3" placeholder="e.g. M&V Plan v1.0 approved by DOE; meters specified for four lines"></textarea></div>
+        <div class="actions">
+            <button class="secondary" onclick="Dash.closeModal('gate-modal')">Cancel</button>
+            <button id="gate-confirm" onclick="Dash.confirmAdvance()">Advance stage</button>
+        </div>
+    </div>
+</div>
+
+<!-- Chat settings modal -->
+<div class="modal-bg" id="settings-modal">
+    <div class="modal">
+        <h3>Chat settings</h3>
+        <div class="field">
+            <label for="api-key">Anthropic API key</label>
+            <input type="password" id="api-key" placeholder="sk-ant-..." autocomplete="off">
+            <label class="ck" style="font-weight:400"><input type="checkbox" id="remember-key"> Remember on this device (localStorage). Otherwise kept for this tab only.</label>
+            <div class="hint">Your key goes straight from this browser to api.anthropic.com. It is never sent to GitHub or stored in the repo. Without a key, the chat runs offline and returns matching passages from the project documents.</div>
+        </div>
+        <div class="field">
+            <label for="model">Model</label>
+            <select id="model">
+                <option value="claude-opus-5-5">Claude Opus 5.5 (default)</option>
+                <option value="claude-sonnet-5-5">Claude Sonnet 5.5</option>
+                <option value="claude-haiku-5-5">Claude Haiku 5.5</option>
+            </select>
+        </div>
+        <div class="actions">
+            <button class="danger" onclick="Chat.clearKey()">Forget key</button>
+            <button class="secondary" onclick="Dash.closeModal('settings-modal')">Cancel</button>
+            <button onclick="Chat.saveSettings()">Save</button>
+        </div>
+    </div>
+</div>
+
+<button class="chat-fab" onclick="Chat.toggle(true)">💬 Ask about the portfolio</button>
+<aside class="chat" id="chat" aria-label="Portfolio assistant">
+    <div class="chat-head">
+        <span class="ttl">💬 Portfolio assistant</span>
+        <button class="secondary small" onclick="Chat.openSettings()">⚙ Settings</button>
+        <button class="secondary small" onclick="Chat.reset()">New chat</button>
+        <button class="secondary small" onclick="Chat.toggle(false)">✕</button>
+    </div>
+    <div class="chat-sub">
+        <span>Scope</span>
+        <select id="chat-scope"></select>
+        <span id="chat-mode"></span>
+    </div>
+    <div class="chat-log" id="chat-log"></div>
+    <div class="suggest" id="suggest"></div>
+    <form class="chat-input" onsubmit="event.preventDefault(); Chat.send();">
+        <textarea id="chat-text" placeholder="Ask what happened in a stage, open questions, KPIs, risks…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();Chat.send();}"></textarea>
+        <button type="submit" id="chat-send">Send</button>
+    </form>
+</aside>
+
+<script src="data/portfolio.js"></script>
+<script src="data/knowledge.js"></script>
+<script src="js/dashboard.js"></script>
+<script type="module" src="js/chat.js"></script>
+</body>
+</html>
