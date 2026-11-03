@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ITV M&V Cookbook Interactive Checklist</title>
+    <style>
+        :root {
+            --primary: #005a9c;
+            --primary-light: #e6f0f8;
+            --success: #28a745;
+            --bg: #f4f6f9;
+            --text: #333;
+            --border: #ddd;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--bg);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+        }
+        header {
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        h1 {
+            margin: 0;
+            color: var(--primary);
+            font-size: 1.8rem;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 0.95rem;
+            margin-top: 5px;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #004477;
+        }
+        button.danger {
+            background: #dc3545;
+        }
+        button.danger:hover {
+            background: #b02a37;
+        }
+        .overall-progress {
+            margin-bottom: 30px;
+            background: var(--primary-light);
+            padding: 15px 20px;
+            border-radius: 6px;
+        }
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: var(--primary);
+        }
+        .progress-bar-bg {
+            background: #cbd5e1;
+            height: 14px;
+            border-radius: 7px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            background: var(--success);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .stage {
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .stage-header {
+            background: #f8fafc;
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            user-select: none;
+        }
+        .stage-header:hover {
+            background: #f1f5f9;
+        }
+        .stage-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin: 0;
+        }
+        .stage-badge {
+            font-size: 0.85rem;
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+        .stage-content {
+            padding: 20px;
+            display: block;
+        }
+        .stage-content.collapsed {
+            display: none;
+        }
+        .objective {
+            font-style: italic;
+            color: #555;
+            margin-top: 0;
+            margin-bottom: 15px;
+            padding-left: 10px;
+            border-left: 3px solid var(--primary);
+        }
+        h3 {
+            font-size: 1.05rem;
+            color: #444;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 8px 6px;
+            border-radius: 4px;
+            transition: background 0.15s;
+        }
+        .checklist-item:hover {
+            background: #f8fafc;
+        }
+        .checklist-item input[type="checkbox"] {
+            margin-top: 5px;
+            transform: scale(1.2);
+            cursor: pointer;
+        }
+        .checklist-item label {
+            cursor: pointer;
+            flex: 1;
+            font-size: 0.95rem;
+        }
+        .checklist-item.checked label {
+            text-decoration: line-through;
+            color: #888;
+        }
+        @media print {
+            body { background: #fff; padding: 0; }
+            .container { box-shadow: none; max-width: 100%; padding: 0; }
+            .controls { display: none; }
+            .stage-content.collapsed { display: block !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div>
+            <h1>M&V Cookbook for ITV</h1>
+            <div class="subtitle">Interactive Lifecycle & Technical Validation Checklist</div>
+        </div>
+        <div class="controls">
+            <button onclick="toggleAll(false)">Expand All</button>
+            <button onclick="toggleAll(true)">Collapse All</button>
+            <button onclick="window.print()">Print / PDF</button>
+            <button class="danger" onclick="resetChecklist()">Reset All</button>
+        </div>
+    </header>
+
+    <div class="overall-progress">
+        <div class="progress-header">
+            <span>Overall Project Completion</span>
+            <span id="overall-text">0 / 0 (0%)</span>
+        </div>
+        <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="overall-bar"></div>
+        </div>
+    </div>
+
+    <div id="checklist-root"></div>
+</div>
+
+<script>
+const checklistData = [
+    {
+        id: "stage-1",
+        title: "Stage 1: Planning Stage",
+        objective: "Establish and document an M&V strategy in a formal M&V Plan.",
+        sections: [
+            {
+                title: "1. Gather Required Inputs",
+                items: [
+                    "<b>Incumbent System Info:</b> Document intended purpose, configuration, historical resource use, maintenance practices, and operational constraints.",
+                    "<b>Site Conditions:</b> Document climate, facility conditions, utility infrastructure, and site-specific constraints.",
+                    "<b>Operating Schedule:</b> Document daily, weekly, and seasonal schedules, production volumes, occupancy levels, and planned downtime.",
+                    "<b>Proposed Technology:</b> Collect technical drawings, schematics, equipment specs, expected efficiency improvements, and data collection capabilities.",
+                    "<b>Process Flow Diagrams:</b> Obtain visual representations of system interactions, resource flows, dependencies, and measurement points.",
+                    "<b>Meter & Sensor List:</b> Inventory existing meters/sensors (types, parameters, locations, accuracy, intervals).",
+                    "<b>Data Acquisition Systems (DAS):</b> Document software platforms, communication protocols, sampling rates, and data retention/overwrite policies.",
+                    "<b>Stakeholder Roles:</b> Define roles for site personnel, technology developers, contractors, and consultants."
+                ]
+            },
+            {
+                title: "2. Execute Planning Methods",
+                items: [
+                    "<b>Identify Basis for Improvement:</b> Review technology and site context to isolate how performance improvements will be achieved.",
+                    "<b>Determine Measurement Boundaries:</b> Define whether the boundary encompasses an entire system or a sub-system.",
+                    "<b>Identify KPIs:</b> Establish metrics for whole-system (e.g., total kWh, BTUs, water/chemical usage) or sub-systems (e.g., COP, boiler efficiency).",
+                    "<b>Assign Stakeholder Weights (if using TVI):</b> Have key decision-makers rank/score each KPI so weights (&Sigma;w<sub>i</sub>) equal 1.",
+                    "<b>Identify Key Independent Variables:</b> Determine variables that impact KPIs (e.g., production units, weather/degree-days, operating hours, water quality).",
+                    "<b>Determine Measurement Time Periods:</b> Define start and end dates for the Baseline and Post-Implementation periods (accounting for seasonality and operating variance).",
+                    "<b>Assess Existing Data Sources:</b> Check Facility Management Systems, submeters, production systems, and utility bills for relevance, length, continuity, and interval availability.",
+                    "<b>Characterize Load and Schedule:</b> Classify equipment as CLTS, CLVS, VLTS, or VLVS.",
+                    "<b>Select M&V Strategy:</b> Choose IPMVP Option A, Option B (preferred for ITV), Option D (simulation), or an Alternative Approach (e.g., On/Off testing) using the Selection Logic Matrix."
+                ]
+            },
+            {
+                title: "3. Complete Stage 1 Outputs & Milestones",
+                items: [
+                    "Distribute welcome materials and secure signed formal agreements.",
+                    "Conduct preliminary calls/interviews and collect initial site data.",
+                    "Draft the Preliminary M&V Approach.",
+                    "Conduct the Onsite Meeting (inspect equipment, finalize objectives, identify meter installation locations).",
+                    "Complete the Risk, Responsibility, and Performance Matrix.",
+                    "<b>Final Deliverable:</b> Draft, review, and obtain formal signatures (developer and host site) on the final <b>M&V Plan</b>."
+                ]
+            }
+        ]
+    },
+    {
+        id: "stage-2",
+        title: "Stage 2: Baseline Stage",
+        objective: "Characterize the incumbent system and develop a predictive baseline model.",
+        sections: [
+            {
+                title: "1. Document Baseline Context & Inputs",
+                items: [
+                    "Document existing equipment types, specifications, and physical conditions.",
+                    "Record staff operation schedules, shifts, and control setpoints (temperatures, flow rates).",
+                    "Record production details (product types, raw materials) and supporting equipment details."
+                ]
+            },
+            {
+                title: "2. Data Collection & Instrumentation",
+                items: [
+                    "<b>Historical Data:</b> If using past data, verify storage overwrite settings and use backcast/proxy methods if reconstruction is needed.",
+                    "<b>New Instrumentation:</b> Install required meters/sensors for missing parameters according to safety regulations.",
+                    "<b>Log Spot Measurements/Installations:</b> Record date installed, location, time, operating conditions, sensor specs (make, model, serial, range, accuracy), owner, and take photos of installations.",
+                    "<b>Validate Readings:</b> Cross-check vendor/site data using an independent meter, spot measurements (e.g., clamp meter), or engineering calculations (e.g., affinity laws).",
+                    "<b>External Data:</b> Set up regular collection from credible external sources (e.g., NOAA, NSRDB for weather; EIA for energy prices).",
+                    "<b>Routine Monitoring:</b> Regularly check incoming data for continuity, validity, and Non-Routine Events (NREs). Poll site staff routinely about operational changes."
+                ]
+            },
+            {
+                title: "3. Data Processing, Screening, & Assessment",
+                items: [
+                    "Compile data from all sources into a central spreadsheet.",
+                    "Align timestamps, apply necessary time-shifts (for lag), and roll up data into desired analysis intervals (hourly, daily, etc.).",
+                    "Convert units for consistency and perform intermediary calculations.",
+                    "Screen and remove outliers (points > or < 3 standard deviations from the mean), missing intervals, and verified abnormal events.",
+                    "Calculate baseline means, standard deviations, and ranges (max/min and max/min &plusmn;10%).",
+                    "Generate time-series plots and scatterplots (filtered by day of week, production mode, etc.)."
+                ]
+            },
+            {
+                title: "4. Baseline Model Development",
+                items: [
+                    "Develop engineering equations (Option A) or statistical regression models (Option B).",
+                    "Validate models against Goodness-of-Fit criteria, engineering judgment, and residual analysis (See Appendix B Checklist)."
+                ]
+            },
+            {
+                title: "5. Complete Stage 2 Outputs",
+                items: [
+                    "Defined Baseline time period.",
+                    "Raw Baseline Dataset (Excel workbook).",
+                    "Processed Baseline Dataset (Excel workbook with all formulas and transformations).",
+                    "QA/QC Summary Log (outliers, exclusions, and NREs).",
+                    "Baseline Data Sufficiency Assessment Log.",
+                    "'Typical Year' dataset (if using Normalized Savings).",
+                    "Baseline Method Summary (equations, assumptions, diagnostics, and plots).",
+                    "Revised project timeline (if applicable)."
+                ]
+            }
+        ]
+    },
+    {
+        id: "stage-3",
+        title: "Stage 3: Implementation Stage",
+        objective: "Verify correct installation/commissioning of the new technology and initiate post-implementation data streams.",
+        sections: [
+            {
+                title: "1. Gather Required Inputs",
+                items: [
+                    "Gather Finalized M&V Plan, Baseline Model/Data Summary, Commissioning Plan/Checklist, and blank NRE Log Template."
+                ]
+            },
+            {
+                title: "2. Execute Implementation & Commissioning Methods",
+                items: [
+                    "<b>Verify Installation:</b> Confirm installed equipment matches the design intent and M&V Plan schematics.",
+                    "<b>Review Commissioning:</b> Witness functional tests, review configuration, and verify that the technology meets site process requirements.",
+                    "<b>Activate Post-Period Metering:</b> Turn on all new DAS/meters and verify uninterrupted data transmission to the central repository.",
+                    "<b>Maintain Incumbent Metering:</b> Ensure baseline measurement equipment continues collecting independent/dependent variables at the exact same frequency.",
+                    "<b>Perform Initial Data QA/QC:</b> Check incoming data for completeness (minimal gaps), sensor calibration, expected data ranges, and temporal consistency (accurate timestamps).",
+                    "<b>Troubleshooting (If applicable):</b> Pause M&V clock if commissioning fails; fix erratic sensor data; document any material deviations from the M&V Plan (create an addendum if necessary)."
+                ]
+            },
+            {
+                title: "3. Complete Stage 3 Outputs (Gate to Stage 4)",
+                items: [
+                    "Initial validated Post-Period Dataset (confirming system health).",
+                    "<b>Commissioning and Functional Verification Report:</b> Include As-Built confirmation (with photos/updated schematics), Functional Test Summary table, and Formal Acceptance signed by the host site.",
+                    "<b>Memo to Proceed:</b> Formal memo from the M&V Lead stating successful commissioning, data stream stability, and the official start date/time of the Post-Implementation Period."
+                ]
+            }
+        ]
+    },
+    {
+        id: "stage-4",
+        title: "Stage 4: Post-Implementation Stage",
+        objective: "Collect, process, and validate operational data from the new technology.",
+        sections: [
+            {
+                title: "1. Document Post-Implementation Context & Inputs",
+                items: [
+                    "Document as-built equipment specs, updated schematics, control diagrams, and sequences of operation.",
+                    "Routinely verify that operating characteristics (schedules, shifts, setpoints, product types) remain consistent with the baseline."
+                ]
+            },
+            {
+                title: "2. Data Collection, Processing, & Assessment",
+                items: [
+                    "Routinely collect and verify data from existing, new, and external sources.",
+                    "Maintain the <b>Non-Routine Event (NRE) Log</b> (record dates, times, descriptions, and suspected impacts of shutdowns, maintenance, or process changes).",
+                    "Compile, align timestamps, convert units, and screen post-period data for outliers (&plusmn;3 standard deviations) and missing intervals.",
+                    "<b>Evaluate Data Sufficiency:</b> Map data using a matrix of operating conditions or binning analysis to ensure full coverage of operational modes and seasons.",
+                    "<b>Compare to Baseline Ranges:</b> Check if post-period independent variables fall within <b>90% of the minimum to 110% of the maximum</b> observed in the baseline training dataset (ASHRAE Guideline 14).",
+                    "Generate post-period means, standard deviations, time-series plots, and comparative scatterplots."
+                ]
+            },
+            {
+                title: "3. Post-Implementation Model Development",
+                items: [
+                    "Develop post-implementation engineering equations or regression models (ideally using the same independent variables as the baseline)."
+                ]
+            },
+            {
+                title: "4. Complete Stage 4 Outputs",
+                items: [
+                    "Post-implementation period definition and system description.",
+                    "Raw Post-Implementation Dataset (Excel workbook).",
+                    "Processed Post-Implementation Dataset (Excel workbook).",
+                    "Post-Implementation QA/QC Summary and NRE Log.",
+                    "Post-Implementation Data Sufficiency Assessment Log.",
+                    "Post-Implementation Method Summary (equations, diagnostics, and plots)."
+                ]
+            }
+        ]
+    },
+    {
+        id: "stage-5",
+        title: "Stage 5: Analysis and Reporting Stage",
+        objective: "Calculate verified savings/performance improvements, apply adjustments, quantify uncertainty, and produce the final report.",
+        sections: [
+            {
+                title: "1. Execute Analysis Methods",
+                items: [
+                    "<b>Define Adjustment Basis:</b> Select Normalized Savings (standard conditions like TMY weather/typical production) or Avoided Energy Use (actual baseline or reporting period conditions).",
+                    "<b>Calculate Adjusted KPIs:</b> Apply both Baseline and Post-Implementation models to the chosen Standard Conditions dataset.",
+                    "<b>Apply Non-Routine Adjustments (NRAs):</b> Correct for static factor changes using IPMVP NRA methods (e.g., Method #1: Omit temporary outage data; or apply engineering adjustments for permanent changes).",
+                    "<b>Calculate Gross Improvements / TVI:</b> Calculate individual KPI savings and aggregate them using stakeholder weights: TVI = &Sigma;(w<sub>i</sub> &times; &Delta;KPI<sub>i</sub> / KPI<sub>base,i</sub>) &plusmn; NRA Adjustments.",
+                    "<b>Quantify Uncertainty:</b> Calculate Fractional Savings Uncertainty (FSU) or Total Value Uncertainty (TVU) using standard error and autocorrelation coefficients.",
+                    "<b>Verify Uncertainty Threshold:</b> Confirm combined uncertainty is <b>< 50% at a 68% confidence level</b> (ASHRAE Guideline 14). If exceeded, flag which KPI components drive the uncertainty.",
+                    "<b>Calculate Cost & Value Savings:</b> Multiply verified resource savings by utility rates defined in the M&V Plan, and quantify non-monetary business impacts (e.g., throughput, quality)."
+                ]
+            },
+            {
+                title: "2. Complete Stage 5 Outputs",
+                items: [
+                    "Verified Performance Improvement Summary tables (TVI, individual KPIs, weights).",
+                    "Uncertainty Report (FSU/TVU by component and aggregate confidence levels).",
+                    "Visualizations (Time-series graphs of Adjusted Baseline vs. Adjusted Post-Implementation; TVI dashboards).",
+                    "<b>Final M&V Report:</b> Include Executive Summary, Methodology, Model Diagnostics, NRA Adjustments, Uncertainty Analysis, and Conclusions.",
+                    "<b>Project Archive:</b> Compile all raw CSV datasets, analysis spreadsheets, model files, and stakeholder weighting documentation."
+                ]
+            }
+        ]
+    },
+    {
+        id: "appendices",
+        title: "Technical Appendix Checklists (Quick Reference)",
+        objective: "Verify sensor installations and statistical regression model validity.",
+        sections: [
+            {
+                title: "A. Instrument Installation Checklist (Appendix 1)",
+                items: [
+                    "<b>Units & Interval:</b> Sensor logs the correct units and can log at a more granular interval than the analysis requires (e.g., 15-min logging for hourly analysis).",
+                    "<b>Range & Resolution:</b> Sensor max/min covers all expected values, and resolution is fine enough to detect meaningful KPI changes.",
+                    "<b>Accuracy & Drift:</b> Sensor accuracy (&plusmn; units) has a negligible impact on uncertainty, and recalibration schedules are set to prevent drift.",
+                    "<b>Local Storage & Power:</b> Memory capacity is sufficient to prevent data overwriting between downloads; power supply is secure (or battery replacement schedule is set).",
+                    "<b>Placement & Signage:</b> Sensor is placed to accurately capture the parameter and labeled with 'Do Not Tamper/Unplug' signage for site staff.",
+                    "<b>Remote Access:</b> If networked, routine checks are scheduled to verify connectivity and prevent data loss."
+                ]
+            },
+            {
+                title: "B. Regression Model Statistical Criteria Checklist (Appendix 2)",
+                items: [
+                    "<b>Coefficient of Determination (R<sup>2</sup>):</b> &ge; 0.75 (IPMVP minimum threshold).",
+                    "<b>CV(RMSE):</b> &le; 20% (for models on a daily interval).",
+                    "<b>Net Determination Bias Error (NDBE):</b> &le; 0.005% (ASHRAE Guideline 14).",
+                    "<b>Model Significance (F-statistic):</b> p-value of F-statistic is < 0.05.",
+                    "<b>Autocorrelation Coefficient (&rho;):</b> < 0.7.",
+                    "<b>Independent Variable Significance:</b> Each variable has a <b>t-statistic &ge; 2.0</b> and a <b>p-value < 0.05</b>.",
+                    "<b>Engineering Judgment:</b> Model is not 'overfit', variables align with physics/equipment fundamentals, and coefficient signs make logical sense.",
+                    "<b>Residual Histogram:</b> Shows an approximate Normal distribution with a mean of zero.",
+                    "<b>Residuals vs. Predicted Plot:</b> Shows constant variance (homoscedasticity) and a flat (horizontal) linear trendline.",
+                    "<b>Residuals vs. Independent Variables Plot:</b> Shows no linear relationship (R<sup>2</sup> = 0).",
+                    "<b>Residual-Lag Plot:</b> Shows random distribution (confirming independence/lack of autocorrelation)."
+                ]
+            }
+        ]
+    }
+];
+
+function renderChecklist() {
+    const root = document.getElementById('checklist-root');
+    root.innerHTML = '';
+    const savedState = JSON.parse(localStorage.getItem('itv_mv_checklist') || '{}');
+
+    checklistData.forEach((stage, sIdx) => {
+        const stageDiv = document.createElement('div');
+        stageDiv.className = 'stage';
+
+        const headerDiv = document.createElement('div');
+        headerDiv.className = 'stage-header';
+        headerDiv.onclick = () => toggleStage(stage.id);
+        headerDiv.innerHTML = `
+            <h2 class="stage-title">${stage.title}</h2>
+            <span class="stage-badge" id="badge-${stage.id}">0 / 0</span>
+        `;
+
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'stage-content';
+        contentDiv.id = `content-${stage.id}`;
+
+        const objP = document.createElement('p');
+        objP.className = 'objective';
+        objP.textContent = `Objective: ${stage.objective}`;
+        contentDiv.appendChild(objP);
+
+        stage.sections.forEach((sec, secIdx) => {
+            const secH3 = document.createElement('h3');
+            secH3.textContent = sec.title;
+            contentDiv.appendChild(secH3);
+
+            sec.items.forEach((itemText, iIdx) => {
+                const itemId = `chk-${sIdx}-${secIdx}-${iIdx}`;
+                const isChecked = !!savedState[itemId];
+
+                const itemDiv = document.createElement('div');
+                itemDiv.className = `checklist-item ${isChecked ? 'checked' : ''}`;
+                itemDiv.id = `wrap-${itemId}`;
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = itemId;
+                checkbox.checked = isChecked;
+                checkbox.dataset.stage = stage.id;
+                checkbox.onchange = () => handleCheck(itemId);
+
+                const label = document.createElement('label');
+                label.htmlFor = itemId;
+                label.innerHTML = itemText;
+
+                itemDiv.appendChild(checkbox);
+                itemDiv.appendChild(label);
+                contentDiv.appendChild(itemDiv);
+            });
+        });
+
+        stageDiv.appendChild(headerDiv);
+        stageDiv.appendChild(contentDiv);
+        root.appendChild(stageDiv);
+    });
+
+    updateProgress();
+}
+
+function handleCheck(itemId) {
+    const checkbox = document.getElementById(itemId);
+    const wrap = document.getElementById(`wrap-${itemId}`);
+    const savedState = JSON.parse(localStorage.getItem('itv_mv_checklist') || '{}');
+
+    if (checkbox.checked) {
+        wrap.classList.add('checked');
+        savedState[itemId] = true;
+    } else {
+        wrap.classList.remove('checked');
+        delete savedState[itemId];
+    }
+
+    localStorage.setItem('itv_mv_checklist', JSON.stringify(savedState));
+    updateProgress();
+}
+
+function updateProgress() {
+    let totalAll = 0;
+    let checkedAll = 0;
+
+    checklistData.forEach(stage => {
+        const checkboxes = document.querySelectorAll(`input[data-stage="${stage.id}"]`);
+        const totalStage = checkboxes.length;
+        let checkedStage = 0;
+
+        checkboxes.forEach(cb => {
+            if (cb.checked) checkedStage++;
+        });
+
+        totalAll += totalStage;
+        checkedAll += checkedStage;
+
+        const badge = document.getElementById(`badge-${stage.id}`);
+        badge.textContent = `${checkedStage} / ${totalStage}`;
+        if (checkedStage === totalStage && totalStage > 0) {
+            badge.style.background = '#d4edda';
+            badge.style.color = '#155724';
+        } else {
+            badge.style.background = 'var(--primary-light)';
+            badge.style.color = 'var(--primary)';
+        }
+    });
+
+    const pct = totalAll > 0 ? Math.round((checkedAll / totalAll) * 100) : 0;
+    document.getElementById('overall-text').textContent = `${checkedAll} / ${totalAll} (${pct}%)`;
+    document.getElementById('overall-bar').style.width = `${pct}%`;
+}
+
+function toggleStage(stageId) {
+    const content = document.getElementById(`content-${stageId}`);
+    content.classList.toggle('collapsed');
+}
+
+function toggleAll(collapse) {
+    checklistData.forEach(stage => {
+        const content = document.getElementById(`content-${stage.id}`);
+        if (collapse) {
+            content.classList.add('collapsed');
+        } else {
+            content.classList.remove('collapsed');
+        }
+    });
+}
+
+function resetChecklist() {
+    if (confirm("Are you sure you want to clear all checked items?")) {
+        localStorage.removeItem('itv_mv_checklist');
+        renderChecklist();
+    }
+}
+
+document.addEventListener('DOMContentLoaded', renderChecklist);
+</script>
+
+</body>
+</html>
