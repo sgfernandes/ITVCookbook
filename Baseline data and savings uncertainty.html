@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Baseline data and savings uncertainty</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f8f7;--card:#fff;--ink:#14231f;--mute:#5d6e68;--line:#d8e0dd;--acc:#0b7d6e;--warn:#c2410c;--ok:#0b7d6e;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1816;--card:#16231f;--ink:#e6efec;--mute:#93a69f;--line:#2a3b36;--acc:#3fc4b0;--warn:#f59e6b;--ok:#3fc4b0}}
+:root[data-theme="dark"]{--bg:#0f1816;--card:#16231f;--ink:#e6efec;--mute:#93a69f;--line:#2a3b36;--acc:#3fc4b0;--warn:#f59e6b;--ok:#3fc4b0}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 "IBM Plex Sans",system-ui,sans-serif}
+main{max-width:720px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:22px;line-height:1.2;margin:0 0 6px;font-weight:600}
+p.sub{margin:0 0 16px;color:var(--mute);max-width:60ch}
+section{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px}
+h2{font-size:15px;margin:0 0 8px;font-weight:600}
+.row{display:grid;grid-template-columns:1fr auto;gap:2px 8px;margin-bottom:10px;align-items:center}
+.row label{font-size:13px;color:var(--mute)}.row output{font-weight:600;font-variant-numeric:tabular-nums}
+.row input[type=range]{grid-column:1/-1;width:100%;accent-color:var(--acc)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+select,button{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%}
+button.main{background:var(--acc);color:var(--bg);border-color:var(--acc);font-weight:600}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat b{display:block;font-size:22px;font-weight:600;font-variant-numeric:tabular-nums}.stat span{font-size:12px;color:var(--mute)}
+#verdict{padding:10px 12px;border-radius:8px;border:1px solid var(--line);margin-top:12px;font-weight:500}
+#verdict.ok{border-color:var(--ok)}#verdict.no{border-color:var(--warn)}
+#flags{margin:8px 0 0;padding-left:18px;color:var(--warn);font-size:13px}
+svg{width:100%;height:auto;display:block}
+.note{font-size:12.5px;color:var(--mute);margin:6px 0 0}
+</style>
+</head>
+<body>
+<main>
+<h1>How much baseline data is enough?</h1>
+<p class="sub">Add months of simulated pre-retrofit data and watch the model fit, temperature coverage and savings uncertainty change.</p>
+
+<section>
+<div class="row"><label for="k">Baseline months</label><output id="ko"></output><input id="k" type="range" min="3" max="36" value="3"></div>
+<div class="two"><button class="main" id="play">Play: add a month at a time</button><button id="re">New random data</button></div>
+</section>
+
+<section>
+<h2>Assumptions</h2>
+<div class="row"><label for="f">Expected savings (% of baseline use)</label><output id="fo"></output><input id="f" type="range" min="2" max="40" value="10"></div>
+<div class="row"><label for="n">Noise in the data, CV(RMSE) (%)</label><output id="no"></output><input id="n" type="range" min="1" max="30" value="6"></div>
+<div class="row"><label for="m">Reporting period (months)</label><output id="mo"></output><input id="m" type="range" min="1" max="36" value="12"></div>
+<div class="row"><label for="t">Target uncertainty (± % of savings)</label><output id="to"></output><input id="t" type="range" min="10" max="100" step="5" value="50"></div>
+<div class="two">
+<label class="note">Confidence level<select id="c"><option value="0.994">68%</option><option value="1.282">80%</option><option value="1.645" selected>90%</option></select></label>
+<label class="note">Baseline starts in<select id="s"></select></label>
+</div>
+</section>
+
+<section>
+<div class="stats">
+<div class="stat"><b id="s1"></b><span>Baseline months used</span></div>
+<div class="stat"><b id="s2"></b><span>Model CV(RMSE) from this data (limit 25%)</span></div>
+<div class="stat"><b id="s3"></b><span>Savings uncertainty</span></div>
+<div class="stat"><b id="s4"></b><span>Months needed to hit target</span></div>
+</div>
+<div id="verdict"></div>
+<ul id="flags"></ul>
+</section>
+
+<section>
+<h2>Simulated baseline and fitted model</h2>
+<div id="c1"></div>
+<p class="note">Dots are monthly energy against average temperature. Filled dots are in your baseline, hollow dots are not yet added. The shaded band is the temperature range the baseline covers.</p>
+</section>
+
+<section>
+<h2>Uncertainty as baseline grows</h2>
+<div id="c2"></div>
+<p class="note">Line: expected uncertainty at your assumed noise. Dot: what this particular simulated sample gives. Dashed lines: your target and 12 months.</p>
+</section>
+
+<p class="note">Method: ASHRAE Guideline 14 fractional savings uncertainty, 1.26 × t × (CV(RMSE) ÷ F) × √((1 + 2/n) ÷ m), with a three-parameter (base, heating, cooling) monthly model at a 60°F balance point. It assumes independent monthly residuals. Interval data needs the autocorrelation adjustment.</p>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const MON=["January","February","March","April","May","June","July","August","September","October","November","December"];
+$("s").innerHTML=MON.map((x,i)=>`<option value="${i}">${x}</option>`).join("");
+let seed=7,Z=[],Z2=[],timer=null;
+function rng(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function gen(){const r=rng(seed),g=()=>Math.sqrt(-2*Math.log(r()+1e-12))*Math.cos(2*Math.PI*r());Z=[];Z2=[];for(let i=0;i<36;i++){Z.push(g());Z2.push(g())}}
+const cols=T=>[1,Math.max(0,T-60),Math.max(0,60-T)];
+function sim(st,cv){const out=[];for(let i=0;i<36;i++){const mi=(st+i)%12,T=55-25*Math.cos(2*Math.PI*(mi+.5)/12)+2*Z2[i];
+const c=cols(T),clean=50000+600*c[1]+450*c[2];out.push({T,y:clean+Z[i]*cv*55000,mi})}return out}
+function solve(A,b){const n=b.length;for(let i=0;i<n;i++){let p=i;for(let r=i+1;r<n;r++)if(Math.abs(A[r][i])>Math.abs(A[p][i]))p=r;[A[i],A[p]]=[A[p],A[i]];[b[i],b[p]]=[b[p],b[i]];
+for(let r=i+1;r<n;r++){const f=A[r][i]/A[i][i];for(let c=i;c<n;c++)A[r][c]-=f*A[i][c];b[r]-=f*b[i]}}
+const x=Array(n).fill(0);for(let i=n-1;i>=0;i--){let s=b[i];for(let c=i+1;c<n;c++)s-=A[i][c]*x[c];x[i]=s/A[i][i]}return x}
+function fit(pts){const X=pts.map(p=>cols(p.T)),keep=[0,1,2].filter(j=>X.some(r=>r[j]!==0));
+const A=keep.map(a=>keep.map(b=>X.reduce((s,r)=>s+r[a]*r[b],0)));keep.forEach((_,i)=>A[i][i]*=1+1e-9);
+const v=keep.map(a=>X.reduce((s,r,i)=>s+r[a]*pts[i].y,0)),sol=solve(A,v),beta=[0,0,0];keep.forEach((j,i)=>beta[j]=sol[i]);
+const pred=T=>cols(T).reduce((s,c,j)=>s+c*beta[j],0),sse=pts.reduce((s,p)=>s+(p.y-pred(p.T))**2,0),mean=pts.reduce((s,p)=>s+p.y,0)/pts.length,df=pts.length-keep.length;
+return{beta,pred,keep,df,cv:df>0?Math.sqrt(sse/df)/mean:null}}
+function tq(z,df){if(df<1)return NaN;return z+(z**3+z)/(4*df)+(5*z**5+16*z**3+3*z)/(96*df*df)}
+const unc=(cv,F,n,m,z)=>1.26*tq(z,n-3)*(cv/F)*Math.sqrt((1+2/n)/m);
+const pc=x=>(x*100).toFixed(0)+"%";
+function line(pts,cls){return `<polyline fill="none" ${cls} points="${pts.map(p=>p.join(",")).join(" ")}"/>`}
+function update(){
+const k=+$("k").value,F=$("f").value/100,cvN=$("n").value/100,m=+$("m").value,tg=$("t").value/100,z=+$("c").value,st=+$("s").value;
+$("ko").textContent=k+" months";$("fo").textContent=$("f").value+"%";$("no").textContent=$("n").value+"%";$("mo").textContent=m+" months";$("to").textContent="±"+$("t").value+"%";
+const all=sim(st,cvN),pts=all.slice(0,k),f=fit(pts),conf=Math.round(z>1.5?90:z>1.2?80:68);
+const real=f.df>0?unc(f.cv,F,k,m,z):null;
+let need=null;for(let n=4;n<=120;n++){if(unc(cvN,F,n,m,z)<=tg){need=n;break}}
+$("s1").textContent=k;$("s2").textContent=f.cv==null?"n/a":pc(f.cv);$("s3").textContent=real==null?"n/a":"±"+pc(real);
+$("s4").textContent=need==null?"10+ years":need<12?need+" (12 in practice)":need;
+const v=$("verdict");
+if(real==null){v.className="";v.textContent="Add at least "+(f.keep.length+1)+" months before the model can estimate its own error."}
+else if(real<=tg){v.className="ok";v.textContent="Meets target: savings known to ±"+pc(real)+" at "+conf+"% confidence."}
+else{v.className="no";v.textContent="Not yet: ±"+pc(real)+" against a ±"+pc(tg)+" target at "+conf+"% confidence."}
+const yr=all.slice(0,12).map(p=>p.T),lo=Math.min(...yr),hi=Math.max(...yr),Tk=pts.map(p=>p.T),klo=Math.min(...Tk),khi=Math.max(...Tk),cov=Math.min(1,(khi-klo)/(hi-lo));
+const fl=[];if(cov<.9)fl.push("Baseline covers "+pc(cov)+" of the annual temperature range. Predictions outside it are extrapolated.");
+if(!f.keep.includes(2))fl.push("No cold months yet, so the model has no heating term.");if(!f.keep.includes(1))fl.push("No warm months yet, so the model has no cooling term.");
+if(k<12&&need!=null&&need<12)fl.push("The formula says "+need+" months could be enough, but weather-sensitive loads need a full year.");
+$("flags").innerHTML=fl.map(x=>`<li>${x}</li>`).join("");
+// chart 1
+const W=360,H=250,L=44,R=10,Tp=10,B=34,tx=T=>L+(T-20)/70*(W-L-R),ys=all.map(p=>p.y),ymin=Math.min(...ys,f.pred(20))-1500,ymax=Math.max(...ys,f.pred(90))+1500,yy=y=>H-B-(y-ymin)/(ymax-ymin)*(H-B-Tp);
+let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Simulated monthly energy versus temperature with fitted model">`;
+s+=`<rect x="${tx(klo)}" y="${Tp}" width="${Math.max(2,tx(khi)-tx(klo))}" height="${H-B-Tp}" fill="var(--acc)" opacity=".12"/>`;
+[20,40,60,80].forEach(T=>s+=`<text x="${tx(T)}" y="${H-16}" font-size="11" text-anchor="middle" fill="var(--mute)">${T}°F</text>`);
+[0,1,2].forEach(i=>{const y=ymin+(ymax-ymin)*(i+.5)/3;s+=`<line x1="${L}" x2="${W-R}" y1="${yy(y)}" y2="${yy(y)}" stroke="var(--line)"/><text x="${L-6}" y="${yy(y)+4}" font-size="11" text-anchor="end" fill="var(--mute)">${(y/1000).toFixed(0)}k</text>`});
+s+=`<text x="${(L+W-R)/2}" y="${H-2}" font-size="11" text-anchor="middle" fill="var(--mute)">Average monthly temperature</text>`;
+all.slice(k).forEach(p=>s+=`<circle cx="${tx(p.T)}" cy="${yy(p.y)}" r="3" fill="none" stroke="var(--mute)" opacity=".5"/>`);
+const curve=[];for(let T=20;T<=90;T+=2)curve.push([tx(T).toFixed(1),yy(f.pred(T)).toFixed(1)]);
+s+=line(curve,'stroke="var(--warn)" stroke-width="2"');
+pts.forEach((p,i)=>s+=`<circle cx="${tx(p.T)}" cy="${yy(p.y)}" r="${i==k-1?5:3.5}" fill="var(--acc)" ${i==k-1?'stroke="var(--ink)" stroke-width="1.5"':''}/>`);
+$("c1").innerHTML=s+"</svg>";
+// chart 2
+const ymaxU=200,ux=n=>L+(n-3)/33*(W-L-R),uy=u=>H-B-Math.min(u,ymaxU)/ymaxU*(H-B-Tp),cu=[];
+for(let n=4;n<=36;n++)cu.push([ux(n).toFixed(1),uy(unc(cvN,F,n,m,z)*100).toFixed(1)]);
+let q=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Savings uncertainty versus baseline months">`;
+[0,50,100,150,200].forEach(u=>q+=`<line x1="${L}" x2="${W-R}" y1="${uy(u)}" y2="${uy(u)}" stroke="var(--line)"/><text x="${L-6}" y="${uy(u)+4}" font-size="11" text-anchor="end" fill="var(--mute)">${u}%</text>`);
+[3,12,24,36].forEach(n=>q+=`<text x="${ux(n)}" y="${H-16}" font-size="11" text-anchor="middle" fill="var(--mute)">${n}</text>`);
+q+=`<text x="${(L+W-R)/2}" y="${H-2}" font-size="11" text-anchor="middle" fill="var(--mute)">Baseline months</text>`;
+q+=`<line x1="${ux(12)}" x2="${ux(12)}" y1="${Tp}" y2="${H-B}" stroke="var(--mute)" stroke-dasharray="4 4"/>`;
+q+=`<line x1="${L}" x2="${W-R}" y1="${uy(tg*100)}" y2="${uy(tg*100)}" stroke="var(--warn)" stroke-dasharray="5 4" stroke-width="1.5"/>`;
+q+=line(cu,'stroke="var(--acc)" stroke-width="2.5"');
+if(real!=null)q+=`<circle cx="${ux(k)}" cy="${uy(real*100)}" r="5" fill="var(--acc)" stroke="var(--ink)" stroke-width="1.5"/>`;
+$("c2").innerHTML=q+(real!=null&&real*100>ymaxU?`<text x="${W-R}" y="${Tp+10}" font-size="11" text-anchor="end" fill="var(--mute)">this sample is off the chart</text>`:"")+"</svg>";
+}
+["k","f","n","m","t","c","s"].forEach(id=>$(id).addEventListener("input",update));
+$("re").onclick=()=>{seed=(seed*7919+13)%100003;gen();update()};
+$("play").onclick=()=>{if(timer){clearInterval(timer);timer=null;$("play").textContent="Play: add a month at a time";return}
+if(+$("k").value>=36)$("k").value=3;$("play").textContent="Pause";
+timer=setInterval(()=>{const e=$("k");if(+e.value>=36){clearInterval(timer);timer=null;$("play").textContent="Play: add a month at a time";return}e.value=+e.value+1;update()},450)};
+gen();update();
+</script>
+</body>
+</html>
