@@ -341,19 +341,37 @@
     <div class="modal">
         <h3>Chat settings</h3>
         <div class="field">
-            <label for="api-key">Anthropic API key</label>
-            <input type="password" id="api-key" placeholder="sk-ant-..." autocomplete="off">
+            <label for="provider">AI provider</label>
+            <select id="provider" onchange="Chat.providerChanged()">
+                <option value="anthropic">Anthropic (direct): Claude models</option>
+                <option value="cborg">CBORG (LBNL AI gateway): Anthropic, OpenAI, Google &amp; LBL-hosted models</option>
+                <option value="custom">Other OpenAI-compatible endpoint</option>
+            </select>
+        </div>
+        <div class="field" id="f-endpoint">
+            <label for="endpoint">Endpoint</label>
+            <select id="endpoint-cborg">
+                <option value="https://api.cborg.lbl.gov">api.cborg.lbl.gov (anywhere)</option>
+                <option value="https://api-local.cborg.lbl.gov">api-local.cborg.lbl.gov (LBL network / VPN only)</option>
+            </select>
+            <input type="text" id="endpoint-custom" placeholder="https://your-gateway.example.org/v1">
+        </div>
+        <div class="field">
+            <label for="api-key" id="key-label">API key</label>
+            <input type="password" id="api-key" autocomplete="off">
             <label class="ck" style="font-weight:400"><input type="checkbox" id="remember-key"> Remember on this device (localStorage). Otherwise kept for this tab only.</label>
-            <div class="hint">Your key goes straight from this browser to api.anthropic.com. It is never sent to GitHub or stored in the repo. Without a key, the chat runs offline and returns matching passages from the project documents.</div>
+            <div class="hint" id="key-hint"></div>
         </div>
         <div class="field">
             <label for="model">Model</label>
-            <select id="model">
-                <option value="claude-opus-5-5">Claude Opus 5.5 (default)</option>
-                <option value="claude-sonnet-5-5">Claude Sonnet 5.5</option>
-                <option value="claude-haiku-5-5">Claude Haiku 5.5</option>
-            </select>
+            <div style="display:flex;gap:6px">
+                <input type="text" id="model" list="model-list" autocomplete="off">
+                <button type="button" class="secondary small" id="load-models" onclick="Chat.loadModels()">Load models</button>
+            </div>
+            <datalist id="model-list"></datalist>
+            <div class="hint" id="model-hint"></div>
         </div>
+        <div class="hint" id="provider-note"></div>
         <div class="actions">
             <button class="danger" onclick="Chat.clearKey()">Forget key</button>
             <button class="secondary" onclick="Dash.closeModal('settings-modal')">Cancel</button>

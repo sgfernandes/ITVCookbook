@@ -1,16 +1,42 @@
 /* ITV Portfolio assistant — LLM chat over the project corpus + live dashboard state.
  *
- * With an API key: calls the Claude Messages API from the browser using the official
- * TypeScript SDK (loaded as an ES module on demand). The full document corpus is sent
- * as a cached system block; the live dashboard state goes in a second, uncached block
- * so stage updates are always reflected.
+ * Providers (chosen in ⚙ Settings; keys stay in the browser):
+ *  - anthropic: Claude Messages API via the official Anthropic TypeScript SDK.
+ *  - cborg:     LBNL CBORG gateway (LiteLLM, OpenAI-compatible) — one key for Anthropic,
+ *               OpenAI, Google and LBL-hosted models. https://cborg.lbl.gov/api_examples/
+ *  - custom:    any other OpenAI-compatible endpoint.
+ * The full document corpus is sent as a (cached where supported) system block; the live
+ * dashboard state follows it so stage updates are always reflected.
  * Without a key: offline mode — answers from dashboard state + keyword search of the corpus.
  */
-const SDK_URL = "https://esm.sh/@anthropic-ai/sdk";
-const KEY_STORE = "itv_anthropic_key";
-const MODEL_STORE = "itv_chat_model";
-const DEFAULT_MODEL = "claude-opus-5-5";
-const FALLBACK_MODELS = new Set(["claude-opus-5-5", "claude-sonnet-5-5"]); // server-side refusal fallbacks supported
+const ANTHROPIC_SDK_URL = "https://esm.sh/@anthropic-ai/sdk";
+const OPENAI_SDK_URL = "https://esm.sh/openai";
+const SETTINGS_STORE = "itv_chat_settings";
+const FALLBACK_MODELS = new Set(["claude-opus-5-5", "claude-sonnet-5-5"]); // Anthropic server-side refusal fallbacks
+
+const PROVIDERS = {
+  anthropic: {
+    name: "Anthropic", keyStore: "itv_anthropic_key", defaultModel: "claude-opus-5-5", placeholder: "sk-ant-...",
+    models: ["claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-5-5"],
+    keyHint: "Get a key at console.anthropic.com. It goes straight from this browser to api.anthropic.com and is never stored in the repo.",
+    modelHint: "claude-opus-5-5 (default), claude-sonnet-5-5 or claude-haiku-5-5 (cheapest).",
+    note: ""
+  },
+  cborg: {
+    name: "CBORG", keyStore: "itv_cborg_key", defaultModel: "anthropic/claude-sonnet", placeholder: "CBORG API key",
+    models: ["anthropic/claude-sonnet", "openai/gpt-4.1"],
+    keyHint: "Request a CBORG key through ComputeView (LBNL). It goes straight from this browser to the CBORG gateway and is never stored in the repo.",
+    modelHint: "Use “Load models” to list every model your key can use (e.g. anthropic/…, openai/…, google/…, lbl/…).",
+    note: "⚠ CBORG guidance: the API should not be connected to a publicly accessible chatbot or interface. Use this only on a private copy of the dashboard (see README) and follow LBNL data-handling rules."
+  },
+  custom: {
+    name: "Custom", keyStore: "itv_custom_key", defaultModel: "", placeholder: "API key",
+    models: [],
+    keyHint: "Key for your OpenAI-compatible gateway. It goes straight from this browser to that endpoint.",
+    modelHint: "Model id as your gateway names it. “Load models” queries /model/info or /models.",
+    note: ""
+  }
+};
 
 const $ = (id) => document.getElementById(id);
 const Dash = window.Dash;
@@ -19,7 +45,7 @@ const esc = Dash.esc;
 
 let history = [];          // [{role, content}] — text-only turns sent to the API
 let busy = false;
-let sdk = null;
+const sdks = {};
 let useFallbacks = true;
 
 // ── Prompt construction ─────────────────────────────────────────────────────
@@ -56,9 +82,25 @@ function liveSystem() {
 }
 
 // ── Settings ────────────────────────────────────────────────────────────────
-function getKey() { return localStorage.getItem(KEY_STORE) || sessionStorage.getItem(KEY_STORE) || ""; }
-function getModel() { return localStorage.getItem(MODEL_STORE) || DEFAULT_MODEL; }
-function modeLabel() { $("chat-mode").textContent = getKey() ? `● ${getModel()}` : "○ offline search"; }
+function loadSettings() {
+  let st = {};
+  try { st = JSON.parse(localStorage.getItem(SETTINGS_STORE)) || {}; } catch (_) { /* ignore */ }
+  st.provider = PROVIDERS[st.provider] ? st.provider : "anthropic";
+  st.models = st.models || {};
+  const legacy = localStorage.getItem("itv_chat_model"); // pre-provider versions stored the Anthropic model here
+  if (legacy && !st.models.anthropic) st.models.anthropic = legacy;
+  st.cborgBase = st.cborgBase || "https://api.cborg.lbl.gov";
+  st.customBase = st.customBase || "";
+  return st;
+}
+let settings = loadSettings();
+function storeSettings() { localStorage.setItem(SETTINGS_STORE, JSON.stringify(settings)); }
+function keyFor(pid) { const k = PROVIDERS[pid].keyStore; return localStorage.getItem(k) || sessionStorage.getItem(k) || ""; }
+function getKey() { return keyFor(settings.provider); }
+function getModel() { return settings.models[settings.provider] || PROVIDERS[settings.provider].defaultModel; }
+function baseFor(pid) { return pid === "cborg" ? settings.cborgBase : pid === "custom" ? settings.customBase : "https://api.anthropic.com"; }
+function ready() { return !!getKey() && !!getModel() && (settings.provider !== "custom" || !!settings.customBase); }
+function modeLabel() { $("chat-mode").textContent = ready() ? `● ${PROVIDERS[settings.provider].name} · ${getModel()}` : "○ offline search"; }
 
 // ── Rendering ───────────────────────────────────────────────────────────────
 function md(src) {
@@ -117,9 +159,9 @@ function renderSuggestions() {
 
 function welcome() {
   $("chat-log").innerHTML = "";
-  addMsg("sys", getKey()
-    ? `Answers use ${KB.length} project documents + the live dashboard state. Model: ${esc(getModel())}.`
-    : `Offline mode: answers come from the dashboard state and keyword search over ${KB.length} documents. Add an Anthropic API key in ⚙ Settings for full LLM answers.`);
+  addMsg("sys", ready()
+    ? `Answers use ${KB.length} project documents + the live dashboard state. Provider: ${esc(PROVIDERS[settings.provider].name)} · model: ${esc(getModel())}.`
+    : `Offline mode: answers come from the dashboard state and keyword search over ${KB.length} documents. Add an API key (Anthropic, CBORG or another OpenAI-compatible provider) in ⚙ Settings for full LLM answers.`);
 }
 
 // ── Offline mode ────────────────────────────────────────────────────────────
@@ -180,13 +222,17 @@ function offlineAnswer(q, scope) {
 }
 
 // ── LLM call ────────────────────────────────────────────────────────────────
-async function loadSDK() {
-  if (!sdk) sdk = (await import(SDK_URL)).default;
-  return sdk;
+async function loadSDK(url) {
+  if (!sdks[url]) sdks[url] = (await import(url)).default;
+  return sdks[url];
 }
 
-async function llmAnswer(userText, el) {
-  const Anthropic = await loadSDK();
+function llmAnswer(userText, el) {
+  return settings.provider === "anthropic" ? anthropicAnswer(userText, el) : openaiCompatAnswer(el);
+}
+
+async function anthropicAnswer(userText, el) {
+  const Anthropic = await loadSDK(ANTHROPIC_SDK_URL);
   const client = new Anthropic({ apiKey: getKey(), dangerouslyAllowBrowser: true });
   const model = getModel();
   const params = {
@@ -231,7 +277,7 @@ async function llmAnswer(userText, el) {
     // Older SDK builds or accounts without the fallback beta: retry once without it.
     if (useFallbacks && params.fallbacks && err instanceof Anthropic.BadRequestError && /fallback|beta/i.test(err.message)) {
       useFallbacks = false;
-      return llmAnswer(userText, el);
+      return anthropicAnswer(userText, el);
     }
     let msg;
     if (err instanceof Anthropic.AuthenticationError) msg = "Invalid API key — update it in ⚙ Settings.";
@@ -244,6 +290,80 @@ async function llmAnswer(userText, el) {
     el.innerHTML = md(text) + `<p style="color:#a12b2b">${esc(msg)}</p>`;
     throw err;
   }
+}
+
+/** CBORG / OpenAI-compatible Chat Completions (streaming) via the official OpenAI SDK. */
+async function openaiCompatAnswer(el) {
+  const OpenAI = await loadSDK(OPENAI_SDK_URL);
+  const pid = settings.provider;
+  const base = baseFor(pid);
+  const model = getModel();
+  const client = new OpenAI({ apiKey: getKey(), baseURL: base, dangerouslyAllowBrowser: true, maxRetries: 1 });
+  // Claude models behind LiteLLM need an explicit cache_control marker; OpenAI/Gemini cache automatically.
+  const claude = /claude|anthropic/i.test(model);
+  const system = claude
+    ? [{ type: "text", text: stableSystem(), cache_control: { type: "ephemeral" } }, { type: "text", text: liveSystem() }]
+    : stableSystem() + "\n\n" + liveSystem();
+
+  let text = "", finish = null, usage = null, served = model;
+  try {
+    const stream = await client.chat.completions.create({
+      model,
+      messages: [{ role: "system", content: system }, ...history],
+      stream: true,
+      stream_options: { include_usage: true }
+    });
+    for await (const chunk of stream) {
+      const choice = chunk.choices && chunk.choices[0];
+      const delta = choice && choice.delta && choice.delta.content;
+      if (delta) {
+        text += delta;
+        el.innerHTML = md(text);
+        el.classList.add("typing");
+        $("chat-log").scrollTop = $("chat-log").scrollHeight;
+      }
+      if (choice && choice.finish_reason) finish = choice.finish_reason;
+      if (chunk.usage) usage = chunk.usage;
+      if (chunk.model) served = chunk.model;
+    }
+    el.classList.remove("typing");
+    if (finish === "length") text += "\n\n*(Answer truncated at the output limit.)*";
+    else if (finish === "content_filter") text += "\n\n*The provider's content filter stopped this answer.*";
+    el.innerHTML = md(text || "*(empty answer)*");
+    const u = usage || {};
+    const cached = (u.prompt_tokens_details && u.prompt_tokens_details.cached_tokens) || 0;
+    el.insertAdjacentHTML("beforeend", `<div class="src">${esc(PROVIDERS[pid].name)} · ${esc(served)} · input ${u.prompt_tokens ?? "?"} (cached ${cached}) · output ${u.completion_tokens ?? "?"} tokens</div>`);
+    return text;
+  } catch (err) {
+    el.classList.remove("typing");
+    const host = (() => { try { return new URL(base).host; } catch (_) { return base; } })();
+    let msg;
+    if (err instanceof OpenAI.AuthenticationError) msg = `Invalid ${PROVIDERS[pid].name} API key — update it in ⚙ Settings.`;
+    else if (err instanceof OpenAI.PermissionDeniedError) msg = `This key can't use "${model}" (or has hit its budget).`;
+    else if (err instanceof OpenAI.NotFoundError) msg = `Model "${model}" not found — use “Load models” in ⚙ Settings.`;
+    else if (err instanceof OpenAI.RateLimitError) msg = "Rate or budget limit reached — wait a moment and try again.";
+    else if (err instanceof OpenAI.APIConnectionError) msg = `Network error reaching ${host}${/api-local/.test(host) ? " (api-local only works on the LBL network/VPN)" : ""}.`;
+    else if (err instanceof OpenAI.APIError) msg = `API error ${err.status ?? ""}: ${err.message}`;
+    else msg = `Error: ${err.message || err}`;
+    el.innerHTML = md(text) + `<p style="color:#a12b2b">${esc(msg)}</p>`;
+    throw err;
+  }
+}
+
+/** List chat models from a LiteLLM (/model/info) or OpenAI-style (/models) endpoint. */
+async function fetchModels(base, key) {
+  const root = base.replace(/\/+$/, "");
+  const headers = { Authorization: `Bearer ${key}` };
+  const r = await fetch(`${root}/model/info`, { headers });
+  if (r.ok) {
+    const j = await r.json();
+    return [...new Set((j.data || []).filter((m) => !m.model_info || !m.model_info.mode || m.model_info.mode === "chat").map((m) => m.model_name))].sort();
+  }
+  if (r.status === 401 || r.status === 403) throw new Error("key rejected");
+  const r2 = await fetch(`${root}/models`, { headers });
+  if (!r2.ok) throw new Error(`HTTP ${r2.status}`);
+  const j2 = await r2.json();
+  return (j2.data || []).map((m) => m.id).sort();
 }
 
 // ── Public API ──────────────────────────────────────────────────────────────
@@ -274,7 +394,7 @@ const Chat = {
     addMsg("user", esc(text));
     const el = addMsg("bot", "", "typing");
 
-    if (!getKey()) {
+    if (!ready()) {
       el.classList.remove("typing");
       el.innerHTML = offlineAnswer(text, scope);
     } else {
@@ -295,17 +415,59 @@ const Chat = {
   reset() { history = []; welcome(); },
 
   openSettings() {
-    $("api-key").value = getKey();
-    $("remember-key").checked = !!localStorage.getItem(KEY_STORE);
-    $("model").value = getModel();
+    $("provider").value = settings.provider;
+    $("endpoint-cborg").value = settings.cborgBase;
+    $("endpoint-custom").value = settings.customBase;
+    Chat.providerChanged();
     $("settings-modal").classList.add("show");
   },
 
+  /** Refresh the dialog fields for the selected provider (keys/models are kept per provider). */
+  providerChanged() {
+    const pid = $("provider").value;
+    const P = PROVIDERS[pid];
+    $("f-endpoint").style.display = pid === "anthropic" ? "none" : "";
+    $("endpoint-cborg").style.display = pid === "cborg" ? "" : "none";
+    $("endpoint-custom").style.display = pid === "custom" ? "" : "none";
+    $("load-models").style.display = pid === "anthropic" ? "none" : "";
+    $("key-label").textContent = `${P.name} API key`;
+    $("api-key").placeholder = P.placeholder;
+    $("api-key").value = keyFor(pid);
+    $("remember-key").checked = !!localStorage.getItem(P.keyStore);
+    $("model").value = settings.models[pid] || P.defaultModel;
+    $("model-list").innerHTML = P.models.map((m) => `<option value="${esc(m)}">`).join("");
+    $("key-hint").textContent = P.keyHint;
+    $("model-hint").textContent = P.modelHint;
+    $("provider-note").textContent = P.note;
+    $("provider-note").style.color = P.note ? "#8a6400" : "";
+  },
+
+  async loadModels() {
+    const pid = $("provider").value;
+    const base = pid === "cborg" ? $("endpoint-cborg").value : $("endpoint-custom").value.trim();
+    const key = $("api-key").value.trim();
+    if (!base || !key) { $("model-hint").textContent = "Enter the endpoint and API key first."; return; }
+    $("model-hint").textContent = "Loading models…";
+    try {
+      const models = await fetchModels(base, key);
+      $("model-list").innerHTML = models.map((m) => `<option value="${esc(m)}">`).join("");
+      $("model-hint").textContent = `${models.length} chat models available — start typing or pick from the list.`;
+    } catch (e) {
+      $("model-hint").textContent = `Couldn't load models (${e.message}). You can still type a model id.`;
+    }
+  },
+
   saveSettings() {
+    const pid = $("provider").value;
+    const P = PROVIDERS[pid];
     const k = $("api-key").value.trim();
-    localStorage.removeItem(KEY_STORE); sessionStorage.removeItem(KEY_STORE);
-    if (k) ($("remember-key").checked ? localStorage : sessionStorage).setItem(KEY_STORE, k);
-    localStorage.setItem(MODEL_STORE, $("model").value);
+    localStorage.removeItem(P.keyStore); sessionStorage.removeItem(P.keyStore);
+    if (k) ($("remember-key").checked ? localStorage : sessionStorage).setItem(P.keyStore, k);
+    settings.provider = pid;
+    settings.models[pid] = $("model").value.trim() || P.defaultModel;
+    if (pid === "cborg") settings.cborgBase = $("endpoint-cborg").value;
+    if (pid === "custom") settings.customBase = $("endpoint-custom").value.trim().replace(/\/+$/, "");
+    storeSettings();
     useFallbacks = true;
     Dash.closeModal("settings-modal");
     modeLabel();
@@ -313,7 +475,8 @@ const Chat = {
   },
 
   clearKey() {
-    localStorage.removeItem(KEY_STORE); sessionStorage.removeItem(KEY_STORE);
+    const P = PROVIDERS[$("provider").value];
+    localStorage.removeItem(P.keyStore); sessionStorage.removeItem(P.keyStore);
     $("api-key").value = "";
     modeLabel();
     Chat.reset();

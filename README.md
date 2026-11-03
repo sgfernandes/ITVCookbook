@@ -15,7 +15,11 @@ Static GitHub Pages site for the DOE ITV measurement & verification cookbook.
 - **Cookbook lifecycle map.** One row per project across the five stages: gates passed (with dates and overrides), milestone progress in the current stage, and open questions already tagged to later stages. Project detail lists the Cookbook checklist sections and exit-gate criteria for the current stage.
 - **Project detail.** Milestones, open site/vendor questions (resolve with an answer, or add new ones), dated stage history (log events), boundary, KPIs, risks and planned timeline.
 - **Chat.** Ask what happened in any stage, or anything else about the projects.
-  - With an Anthropic API key (⚙ Settings), it calls Claude straight from your browser. It sends the document corpus as a cached system block, plus the live dashboard state. The key stays in your browser and is never stored in the repo.
+  - Pick a provider in ⚙ Settings. Keys stay in your browser and are never stored in the repo.
+    - **Anthropic (direct):** Claude models via the Anthropic SDK.
+    - **CBORG (LBNL AI gateway):** one CBORG key gives access to Anthropic, OpenAI, Google and LBL-hosted models. Choose `api.cborg.lbl.gov`, or `api-local.cborg.lbl.gov` on the LBL network, and use **Load models** to list the models your key can use. See https://cborg.lbl.gov/api_examples/. CBORG's guidance says its API should not be connected to a publicly accessible chatbot, so only use it on a private copy of the dashboard.
+    - **Other OpenAI-compatible endpoint:** any gateway that accepts OpenAI-style requests, with your own base URL.
+  - The chat sends the document corpus plus the live dashboard state with every question. Prompt caching is used where the provider supports it.
   - Without a key, it runs offline and answers from the dashboard state plus a keyword search of the documents.
 
 ### Data files
