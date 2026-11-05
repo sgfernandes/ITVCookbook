@@ -148,6 +148,8 @@ A useful log records, for each independent variable, its baseline and post train
 
 The figure and script below use synthetic data to illustrate a changepoint model, normalized weather coverage, model/application ranges under four savings approaches, and a two-variable marginal-range screen. They are diagnostic examples only; their simulated thresholds and coverage values are not universal sufficiency criteria. The two-variable plot uses a rectangular min/max screen, which does not establish joint support.
 
+[Open the interactive data coverage and sufficiency demonstration](data-coverage-sufficiency-demo.html) in a browser, or use the static preview below. The interactive view lets readers adjust synthetic baseline/post ranges, data window length, review margin, and analysis approach.
+
 ![Four-panel synthetic data coverage and sufficiency diagnostics](data_coverage_sufficiency_demo.png)
 
 Run the reproducible [Python demonstration](data_coverage_sufficiency_demo.py) with NumPy and Matplotlib:
